@@ -110,10 +110,6 @@ public class CoinArrayAdapter extends ArrayAdapter<Coin> {
         return row;
     }
 
-    Drawable drawableURL(String url, String sourceName)
-            throws java.net.MalformedURLException, java.io.IOException {
-        return Drawable.createFromStream(((java.io.InputStream)new java.net.URL(url).getContent()), sourceName);
 
-    }
 
 }
