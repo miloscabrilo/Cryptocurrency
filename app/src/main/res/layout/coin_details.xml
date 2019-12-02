@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginTop="0dp"
+    android:layout_marginBottom="0dp"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="1">
+
+        <TextView
+            android:id="@+id/textNameCoin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_toRightOf="@+id/coinImage2" />
+
+        <ImageView
+            android:id="@+id/coinImage2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true" />
+
+        <Spinner
+            android:id="@+id/actionBarSpinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:spinnerMode="dialog" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:weightSum="1">
+
+        <TextView
+            android:id="@+id/textMarketCap"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Market Cap"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/textTotalVol24h"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Total Vol. 24h"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/textDirectVol24h"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Direct Vol. 24h"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/textDirectVol24hDolar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Direct Vol. 24h $"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/textOpen24hDolar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Open 24h $"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/textLowHigh"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Low/High 24h $"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+</LinearLayout>
