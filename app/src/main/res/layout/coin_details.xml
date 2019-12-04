@@ -6,13 +6,22 @@
     android:layout_height="match_parent"
     android:layout_marginTop="0dp"
     android:layout_marginBottom="0dp"
-    android:orientation="vertical">
+    tools:context="com.example.cryptocurrency.CoinDetails"
+    android:orientation="vertical" >
+    <!--//tools:context="com.example.cryptocurrency.CoinDetails"> -->
+
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:weightSum="1">
+
+        <ImageView
+            android:id="@+id/coinImage2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true" />
 
         <TextView
             android:id="@+id/textNameCoin"
@@ -21,11 +30,6 @@
             android:layout_weight="1"
             android:layout_toRightOf="@+id/coinImage2" />
 
-        <ImageView
-            android:id="@+id/coinImage2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true" />
 
         <Spinner
             android:id="@+id/actionBarSpinner"
@@ -54,12 +58,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Total Vol. 24h"
+            android:layout_below="@id/textMarketCap"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/textDirectVol24h"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_below="@id/textTotalVol24h"
             android:text="Direct Vol. 24h"
             android:textStyle="bold" />
 

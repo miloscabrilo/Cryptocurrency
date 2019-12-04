@@ -6,14 +6,12 @@ public class Coin {
     private String imageCoin;
     private String nameCoin;
     private String symbolCoin;
-    private int height;
 
-    public Coin(String image, String name,String symbol, int height) {
+    public Coin(String image, String name,String symbol) {
         super();
         this.setImageCoin(image);
         this.setNameCoin(name);
         this.setSymbolCoin(symbol);
-        this.height=height;
     }
     public String getNameCoin() { return nameCoin; }
 
@@ -26,8 +24,6 @@ public class Coin {
     public String getImageCoin() { return imageCoin; }
 
     public void setImageCoin(String imageCoin) { this.imageCoin = imageCoin;}
-
-    public int getHeight() { return height; }
 
     public String toString() {
         String outString = "\"Data\":[{\"CoinInfo\":";

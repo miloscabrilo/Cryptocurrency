@@ -48,6 +48,7 @@ import java.util.ListIterator;
 public class CoinArrayAdapter extends ArrayAdapter<Coin> {
     private static final String TAG= "CoinArrayAdapter";
     private List<Coin> coinList= new ArrayList<>();
+    private Context mContext;
 
     private RequestQueue mQueue;
 
@@ -61,7 +62,7 @@ public class CoinArrayAdapter extends ArrayAdapter<Coin> {
 
     public CoinArrayAdapter(Context context, int textViewResourceId) {
         super(context, textViewResourceId);
-
+        this.mContext=context;
     }
 
     @Override
@@ -97,18 +98,16 @@ public class CoinArrayAdapter extends ArrayAdapter<Coin> {
         }
         Coin coin = getItem(position);
 
-
-
         String imageUrl = coin.getImageCoin();
         //Picasso.with(getContext()).load(imageUrl).placeholder(R.drawable.ic_launcher_background).into(viewHolder.imageCoin);
-        Picasso.get().load(imageUrl).resize(coin.getHeight()/14, coin.getHeight()/14).into(viewHolder.imageCoin);
-
-
+        Picasso.get().load(imageUrl).resize(120,120).into(viewHolder.imageCoin);
 
         viewHolder.nameCoin.setText(coin.getNameCoin());
         viewHolder.symbolCoin.setText(coin.getSymbolCoin());
         return row;
     }
+
+
 
 
 
