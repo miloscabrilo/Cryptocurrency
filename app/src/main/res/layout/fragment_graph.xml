@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".FragmentGraph">
+
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/list_item1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/first1W"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="1W" />
+
+                <Button
+                    android:id="@+id/first2W"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="2W" />
+
+                <Button
+                    android:id="@+id/first1M"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="1M" />
+            </LinearLayout>
+
+            <com.example.cryptocurrency.LineView
+                android:id="@+id/lineView"
+                android:layout_width="400dp"
+                android:layout_height="250dp"
+                android:layout_below="@id/list_item1"/>
+            <LinearLayout
+                android:id="@+id/list_item2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/lineView"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/second1D"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="1D" />
+
+                <Button
+                    android:id="@+id/second3D"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="3D" />
+
+                <Button
+                    android:id="@+id/second1W"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="1W" />
+            </LinearLayout>
+
+            <com.example.cryptocurrency.LineView
+                android:id="@+id/lineView2"
+                android:layout_width="400dp"
+                android:layout_height="250dp"
+                android:layout_below="@+id/list_item2" />
+            <LinearLayout
+                android:id="@+id/list_item3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/lineView2"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/third1h"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="1h" />
+
+                <Button
+                    android:id="@+id/third3h"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="3h" />
+
+                <Button
+                    android:id="@+id/third1D"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="1D" />
+            </LinearLayout>
+            <com.example.cryptocurrency.LineView
+                android:id="@+id/lineView3"
+                android:layout_width="400dp"
+                android:layout_height="250dp"
+                android:layout_below="@+id/list_item3" />
+        </RelativeLayout>
+    </ScrollView>
+
+
+
+</FrameLayout>

@@ -23,6 +23,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,6 +34,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.JsonObject;
 
 import org.json.JSONArray;
@@ -40,6 +42,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity {
+
+    //public static int serialNumber=1;
+
+    //public static final String ARG_FROM_MAIN = "arg";
+    public static final String ARG_NAME_FROM_MAIN = "name_coin";
+    public static final String ARG_IMAGE_FROM_MAIN = "image_coin";
+    public static final String ARG_SYMBOL_FROM_MAIN = "symbol_coin";
 
     private ListView listView;
     private CoinArrayAdapter coinArrayAdapter;
@@ -62,21 +71,33 @@ public class MainActivity extends AppCompatActivity {
         listView.setAdapter(coinArrayAdapter);
         listView.setFocusable(false);
 
+        if(coinArrayAdapter.getCount()==0){
+            try {
+                jsonParse(coinArrayAdapter.getCount());
 
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
         // Use jsonParse method to get Cryptocurrencies.
-        try {
+        /*try {
             jsonParse(coinArrayAdapter.getCount());
 
         } catch (JSONException e) {
             e.printStackTrace();
-        }
+        }*/
 
 
         // OnClick Listener. Opens a new layout with general information about the Cryptocurrency clicked.
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(MainActivity.this, CoinDetails.class);
+                Intent intent = new Intent(MainActivity.this, Coin_details_tab.class);
+                TextView nameView = (TextView) view.findViewById(R.id.coinName);
+                TextView symbolView = (TextView) view.findViewById(R.id.coinSymbol);
+                intent.putExtra(ARG_NAME_FROM_MAIN, nameView.getText());
+                intent.putExtra(ARG_SYMBOL_FROM_MAIN, symbolView.getText());
+                intent.putExtra(ARG_IMAGE_FROM_MAIN, coinArrayAdapter.getItem(position).getImageCoin());
                 startActivity(intent);
             }
         });
@@ -85,15 +106,21 @@ public class MainActivity extends AppCompatActivity {
         listView.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(AbsListView view, int scrollState) {
-                try {
-                    jsonParse(coinArrayAdapter.getCount());
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+
             }
 
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                if(view.getLastVisiblePosition() == totalItemCount -1 && listView.getCount() >= numberDataPerPages) {
+
+                    try {
+                        jsonParse(coinArrayAdapter.getCount());
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+
+                }
 
             }
         });
@@ -165,7 +192,8 @@ public class MainActivity extends AppCompatActivity {
             urlPage=0;
         }
         else {
-            urlPage = countCoins / (numberDataPerPages + 1) + 1;
+            //urlPage = countCoins / (numberDataPerPages +1) + 1;
+            urlPage = countCoins / numberDataPerPages;
         }
 
         String url = "https://min-api.cryptocompare.com/data/top/totaltoptiervolfull?tsym=USD";
@@ -184,10 +212,12 @@ public class MainActivity extends AppCompatActivity {
                     for(int i=0; i<data.length();i++) {
                         JSONObject objectData = data.getJSONObject(i);
                         JSONObject coinInfo = objectData.getJSONObject("CoinInfo");
+                        //String coinName = coinInfo.getString("FullName");
                         String symbol = coinInfo.getString("Name");
                         String coinName = coinInfo.getString("FullName");
                         String imageUrl = "https://www.cryptocompare.com"+ coinInfo.getString("ImageUrl");
-
+                        //coinName = Integer.toString(serialNumber) + coinName;
+                        //serialNumber++;
                         Coin coin = new Coin(imageUrl, coinName, symbol);
                         coinArrayAdapter.add(coin);
 
@@ -213,6 +243,16 @@ public class MainActivity extends AppCompatActivity {
         return Drawable.createFromStream(((java.io.InputStream)new java.net.URL(url).getContent()), sourceName);
 
     }*/
+
+    /*private void handleUp(View view) {
+        FloatingActionButton FAB = (FloatingActionButton) view.findViewById(R.id.fabToTop);
+        FAB.setOnClickListener( {
+            if (listView.getCount() != 0) {
+                listView.smoothScrollToPosition(0);
+            }
+        });
+    }*/
+
 
 }
 
