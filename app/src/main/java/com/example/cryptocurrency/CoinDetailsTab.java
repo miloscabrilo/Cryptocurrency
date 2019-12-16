@@ -1,7 +1,13 @@
 package com.example.cryptocurrency;
 
+import android.graphics.PointF;
 import android.os.Bundle;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
@@ -18,12 +24,18 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.cryptocurrency.ui.main.SectionsPagerAdapter;
 import com.squareup.picasso.Picasso;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,30 +47,37 @@ import java.util.Vector;
 public class Coin_details_tab extends AppCompatActivity {
     private TextView coinName, coinSymbol;
     private ImageView coinImage;
+    //private ViewPagerAdapter viewPagerAdapter;
     private SectionsPagerAdapter sectionsPagerAdapter;
     private ViewPager viewPager;
-    private TabLayout tabs;
+    private TabLayout tabLayout;
     private List<Fragment> fragmentList;
     private Spinner spinner;
     private Fragment genInfo;
     private Fragment graphView;
+    private String symbolName;
+    private RequestQueue mQueue;
+    private int[] timeForDay, timeForHour, timeForMinute;
+    private Button first1W;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.coin_details_tab);
-        genInfo = new FragmentGeneralInfo();
+        /*genInfo = new FragmentGeneralInfo();
         graphView = new FragmentGraph();
         fragmentList = new Vector<Fragment>();
-        //fragmentList.add(Fragment.instantiate(this, FragmentGeneralInfo.class.getName()));
-        //fragmentList.add(Fragment.instantiate(this, FragmentGraph.class.getName()));
+        fragmentList.add(Fragment.instantiate(this, FragmentGeneralInfo.class.getName()));
+        fragmentList.add(Fragment.instantiate(this, FragmentGraph.class.getName()));
         fragmentList.add(genInfo);
-        fragmentList.add(graphView);
+        fragmentList.add(graphView);*/
+
 
         // Obtained data from MAIN ACTIVITY
         String passedArgName = getIntent().getExtras().getString("name_coin");
         String passedArgSymbol = getIntent().getExtras().getString("symbol_coin");
         String passedArgImage = getIntent().getExtras().getString("image_coin");
+        symbolName = passedArgSymbol;
 
         coinName = (TextView) findViewById(R.id.textNameCoin);
         coinSymbol = (TextView) findViewById(R.id.textSymbolCoin);
@@ -66,11 +85,13 @@ public class Coin_details_tab extends AppCompatActivity {
 
         coinName.setText(passedArgName);
         coinSymbol.setText(passedArgSymbol);
-        Picasso.get().load(passedArgImage).resize(120,120).into(coinImage);
+        Picasso.get().load(passedArgImage).resize(120, 120).into(coinImage);
 
-        sectionsPagerAdapter = new SectionsPagerAdapter(this, getSupportFragmentManager(), passedArgSymbol);
-
-
+        //mQueue = Volley.newRequestQueue(this);
+        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager(), passedArgSymbol);
+        adapter.AddFragment(new FragmentGeneralInfo(passedArgSymbol), "General info");
+        adapter.AddFragment(new FragmentGraph(passedArgSymbol), "Graph view");
+        //sectionsPagerAdapter = new SectionsPagerAdapter(this, getSupportFragmentManager(), passedArgSymbol);
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -90,17 +111,19 @@ public class Coin_details_tab extends AppCompatActivity {
         spinner.setAdapter(adp1);*/
 
 
-
         //BTC, ETH, EVN,DOGE, ZEC, USD,EUR
 
         //information = new ArrayAdapter();
-        viewPager = findViewById(R.id.view_pager);
-        viewPager.setAdapter(sectionsPagerAdapter);
+        viewPager = (ViewPager) findViewById(R.id.view_pager);
+        //viewPager.setAdapter(sectionsPagerAdapter);
+        viewPager.setAdapter(adapter);
 
-        tabs = findViewById(R.id.tabs);
-        tabs.setupWithViewPager(viewPager);
-        //tabs.addTab(tabs.newTab().setText("General Info55"));
-        //tabs.addTab(tabs.newTab().setText("Graph View55"));
+
+
+        tabLayout = (TabLayout) findViewById(R.id.tabs);
+        tabLayout.setupWithViewPager(viewPager);
+
+
 
 
 
@@ -118,4 +141,6 @@ public class Coin_details_tab extends AppCompatActivity {
         //tt.setText("pomozi Boze");
 
     }
+
+
 }
