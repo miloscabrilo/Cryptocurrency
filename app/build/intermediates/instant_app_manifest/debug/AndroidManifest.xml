@@ -23,7 +23,7 @@
         android:testOnly="true"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="com.example.cryptocurrency.Coin_details_tab"
+            android:name="com.example.cryptocurrency.CoinDetailsTab"
             android:label="@string/title_activity_coin_details_tab"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name="com.example.cryptocurrency.MainActivity" >
@@ -33,7 +33,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.example.cryptocurrency.CoinDetails" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"

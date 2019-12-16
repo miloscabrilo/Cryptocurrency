@@ -13,7 +13,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".Coin_details_tab"
+            android:name=".CoinDetailsTab"
             android:label="@string/title_activity_coin_details_tab"
             android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity android:name=".MainActivity">
@@ -23,8 +23,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".CoinDetails"></activity>
-
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="6eff788ab8ad19fe54ee0f4e21a67248ffb249cd8b52fcd725016f13bd0e6cfe" />

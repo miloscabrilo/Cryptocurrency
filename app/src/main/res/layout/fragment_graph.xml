@@ -8,7 +8,7 @@
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content">
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -22,9 +22,17 @@
                 android:orientation="horizontal">
 
                 <Button
+                    android:id="@+id/first1D"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:focusable="true"
+                    android:layout_weight="1"
+                    android:text="1D" />
+                <Button
                     android:id="@+id/first1W"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:focusable="true"
                     android:layout_weight="1"
                     android:text="1W" />
 
@@ -45,14 +53,21 @@
 
             <com.example.cryptocurrency.LineView
                 android:id="@+id/lineView"
-                android:layout_width="400dp"
-                android:layout_height="250dp"
-                android:layout_below="@id/list_item1"/>
+                android:layout_width="match_parent"
+                android:layout_centerInParent="true"
+                android:layout_height="350dp"
+                android:layout_below="@+id/list_item1"/>
+            <View
+                android:id="@+id/line1"
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:layout_below="@+id/lineView"
+                android:background="#c0c0c0"/>
             <LinearLayout
                 android:id="@+id/list_item2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/lineView"
+                android:layout_below="@+id/line1"
                 android:orientation="horizontal">
 
                 <Button
@@ -79,14 +94,21 @@
 
             <com.example.cryptocurrency.LineView
                 android:id="@+id/lineView2"
-                android:layout_width="400dp"
-                android:layout_height="250dp"
+                android:layout_width="match_parent"
+                android:layout_centerInParent="true"
+                android:layout_height="350dp"
                 android:layout_below="@+id/list_item2" />
+            <View
+                android:id="@+id/line2"
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:layout_below="@+id/lineView2"
+                android:background="#c0c0c0"/>
             <LinearLayout
                 android:id="@+id/list_item3"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/lineView2"
+                android:layout_below="@+id/line2"
                 android:orientation="horizontal">
 
                 <Button
@@ -112,8 +134,9 @@
             </LinearLayout>
             <com.example.cryptocurrency.LineView
                 android:id="@+id/lineView3"
-                android:layout_width="400dp"
-                android:layout_height="250dp"
+                android:layout_width="match_parent"
+                android:layout_centerInParent="true"
+                android:layout_height="350dp"
                 android:layout_below="@+id/list_item3" />
         </RelativeLayout>
     </ScrollView>

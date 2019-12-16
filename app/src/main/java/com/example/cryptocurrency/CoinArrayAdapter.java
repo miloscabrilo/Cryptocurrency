@@ -1,57 +1,23 @@
 package com.example.cryptocurrency;
 
-import android.app.DownloadManager;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.Drawable;
-import android.util.DisplayMetrics;
 import android.view.View;
-
 import android.view.ViewGroup;
+import android.view.LayoutInflater;
 
 import android.widget.ArrayAdapter;
-import android.content.Context;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import android.view.LayoutInflater;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
-import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
-import com.squareup.picasso.*;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.ListIterator;
 
 public class CoinArrayAdapter extends ArrayAdapter<Coin> {
     private static final String TAG= "CoinArrayAdapter";
     private List<Coin> coinList= new ArrayList<>();
     private Context mContext;
-
-    private RequestQueue mQueue;
-
 
     static class CoinViewHolder {
         ImageView imageCoin;
@@ -59,10 +25,9 @@ public class CoinArrayAdapter extends ArrayAdapter<Coin> {
         TextView symbolCoin;
     }
 
-
     public CoinArrayAdapter(Context context, int textViewResourceId) {
         super(context, textViewResourceId);
-        this.mContext=context;
+        this.mContext = context;
     }
 
     @Override
@@ -99,16 +64,10 @@ public class CoinArrayAdapter extends ArrayAdapter<Coin> {
         Coin coin = getItem(position);
 
         String imageUrl = coin.getImageCoin();
-        //Picasso.with(getContext()).load(imageUrl).placeholder(R.drawable.ic_launcher_background).into(viewHolder.imageCoin);
         Picasso.get().load(imageUrl).resize(120,120).into(viewHolder.imageCoin);
 
         viewHolder.nameCoin.setText(coin.getNameCoin());
         viewHolder.symbolCoin.setText(coin.getSymbolCoin());
         return row;
     }
-
-
-
-
-
 }
