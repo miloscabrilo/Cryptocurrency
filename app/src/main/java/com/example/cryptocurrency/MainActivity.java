@@ -29,11 +29,16 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MainActivity extends AppCompatActivity {
 
     public static final String ARG_NAME_FROM_MAIN = "name_coin";
     public static final String ARG_IMAGE_FROM_MAIN = "image_coin";
     public static final String ARG_SYMBOL_FROM_MAIN = "symbol_coin";
+    public static final String ARG_LIST_SYMBOL = "list_symbol";
+    private List<String> listSymbol;
     private ListView listView;
     private CoinArrayAdapter coinArrayAdapter;
     private RequestQueue mQueue;
@@ -53,6 +58,9 @@ public class MainActivity extends AppCompatActivity {
         coinArrayAdapter = new CoinArrayAdapter(getApplicationContext(), R.layout.list_of_coins);
         listView.setAdapter(coinArrayAdapter);
         listView.setFocusable(false);
+        listSymbol = new ArrayList<>();
+        listSymbol.add("Select");
+
 
         // Use jsonParse method to get Cryptocurrencies.
         if (coinArrayAdapter.getCount() == 0) {
@@ -74,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
                 intent.putExtra(ARG_NAME_FROM_MAIN, nameView.getText());
                 intent.putExtra(ARG_SYMBOL_FROM_MAIN, symbolView.getText());
                 intent.putExtra(ARG_IMAGE_FROM_MAIN, coinArrayAdapter.getItem(position).getImageCoin());
+                intent.putStringArrayListExtra(ARG_LIST_SYMBOL, (ArrayList<String>)listSymbol);
                 startActivity(intent);
             }
         });
@@ -131,6 +140,7 @@ public class MainActivity extends AppCompatActivity {
                         String imageUrl = "https://www.cryptocompare.com"+ coinInfo.getString("ImageUrl");
                         Coin coin = new Coin(imageUrl, coinName, symbol);
                         coinArrayAdapter.add(coin);
+                        listSymbol.add(symbol);
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();

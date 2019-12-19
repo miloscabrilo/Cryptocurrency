@@ -23,6 +23,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 
 public class FragmentGeneralInfo extends Fragment {
@@ -33,11 +34,17 @@ public class FragmentGeneralInfo extends Fragment {
     private String[] listToCompare;
     private RequestQueue mQueue;
     private String symbolName;
+    private List<String> listSymbol;
 
     public FragmentGeneralInfo() {
     }
     public FragmentGeneralInfo(String symbol) {
         symbolName = symbol;
+    }
+
+    public FragmentGeneralInfo(String symbol, List<String> symbols) {
+        symbolName = symbol;
+        listSymbol = symbols;
     }
 
     @Override

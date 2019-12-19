@@ -1,6 +1,7 @@
 package com.example.cryptocurrency;
 
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -9,18 +10,29 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.Spinner;
+import android.widget.TextView;
 
 import org.json.JSONException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class FragmentGraph extends Fragment implements View.OnClickListener {
 
     private View view;
+    private TextView textCompare;
     private LineView lineView, lineView2, lineView3;
     private Button first1D, first1W, first2W, first1M;
     private Button second1D, second3D, second1W;
     private Button third1H, third3H, third1D;
+    private Spinner spinnerSymbol;
     private String symbolName;
+    private List<String> listSymbol;
+    private List<String> selectedSymbol;
 
 
     public FragmentGraph() {
@@ -28,6 +40,13 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
 
     public FragmentGraph(String symbol) {
         symbolName = symbol;
+    }
+
+    public FragmentGraph(String symbol, List<String> symbols) {
+        symbolName = symbol;
+        listSymbol = symbols;
+        listSymbol.remove(symbolName);
+        listSymbol.remove("BTC");
     }
 
     @Override
@@ -60,6 +79,8 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
         third1H = (Button) view.findViewById(R.id.third1h);
         third3H = (Button) view.findViewById(R.id.third3h);
         third1D = (Button) view.findViewById(R.id.third1D);
+        textCompare = (TextView) view.findViewById(R.id.textCompared);
+        spinnerSymbol = (Spinner) view.findViewById(R.id.spinner);
 
         // Setting onClick method for all buttons.
         first1D.setOnClickListener(this);
@@ -73,19 +94,47 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
         third3H.setOnClickListener(this);
         third1D.setOnClickListener(this);
 
+        // Initial setting for Button color.
+        initialSetButtonColor();
 
-        first1W.setBackgroundColor(Color.WHITE);
-        first2W.setBackgroundColor(Color.WHITE);
-        first1M.setBackgroundColor(Color.WHITE);
-        second3D.setBackgroundColor(Color.WHITE);
-        second1W.setBackgroundColor(Color.WHITE);
-        third3H.setBackgroundColor(Color.WHITE);
-        third1D.setBackgroundColor(Color.WHITE);
 
-        // Initial activated Buttons.
-        first1D.setBackgroundColor(Color.rgb(0, 157, 111));
-        second1D.setBackgroundColor(Color.rgb(0, 157, 111));
-        third1H.setBackgroundColor(Color.rgb(0, 157, 111));
+
+        textCompare.setText("Add a comparison to the " + symbolName + ":");
+        textCompare.setTypeface(null, Typeface.BOLD);
+
+
+        //listSymbol.add(0, "");
+        //listSymbol.remove(symbolName);
+        //editListSymbol(symbolName);
+        selectedSymbol = new ArrayList<String>();
+        selectedSymbol.add("BTC");
+
+        final ArrayAdapter<String> adapter = new ArrayAdapter<String>(
+                getActivity(),
+                android.R.layout.simple_spinner_item,
+                listSymbol
+        );
+        spinnerSymbol.setAdapter(adapter);
+        spinnerSymbol.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if(position != 0) {
+                    selectedSymbol.add(adapter.getItem(position));
+                    listSymbol.remove(position);
+                    adapter.notifyDataSetChanged();
+                    spinnerSymbol.setSelection(0);
+                    initialSetButtonColor();
+                    //jsonParse(
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+
 
         // Initial graph plotting. By day compared - for one day.
         // Setting number of columns and rows in which graph is plotted.
@@ -119,6 +168,21 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
         }
 
         return view;
+    }
+
+    public void initialSetButtonColor() {
+        first1W.setBackgroundColor(Color.WHITE);
+        first2W.setBackgroundColor(Color.WHITE);
+        first1M.setBackgroundColor(Color.WHITE);
+        second3D.setBackgroundColor(Color.WHITE);
+        second1W.setBackgroundColor(Color.WHITE);
+        third3H.setBackgroundColor(Color.WHITE);
+        third1D.setBackgroundColor(Color.WHITE);
+
+        // Initial activated Buttons.
+        first1D.setBackgroundColor(Color.rgb(0, 157, 111));
+        second1D.setBackgroundColor(Color.rgb(0, 157, 111));
+        third1H.setBackgroundColor(Color.rgb(0, 157, 111));
     }
 
     // Redefine onClick method for Buttons.
@@ -251,4 +315,5 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
                 }
         }
     }
+
 }

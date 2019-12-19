@@ -10,11 +10,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import com.squareup.picasso.Picasso;
 
+import java.util.List;
+
 public class CoinDetailsTab extends AppCompatActivity {
     private TextView coinName, coinSymbol;
     private ImageView coinImage;
     private ViewPager viewPager;
     private TabLayout tabLayout;
+    private List<String> listSymbol;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,6 +28,7 @@ public class CoinDetailsTab extends AppCompatActivity {
         String passedArgName = getIntent().getExtras().getString("name_coin");
         String passedArgSymbol = getIntent().getExtras().getString("symbol_coin");
         String passedArgImage = getIntent().getExtras().getString("image_coin");
+        listSymbol = getIntent().getStringArrayListExtra("list_symbol");
 
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         viewPager = (ViewPager) findViewById(R.id.view_pager);
@@ -38,7 +42,7 @@ public class CoinDetailsTab extends AppCompatActivity {
 
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
         adapter.AddFragment(new FragmentGeneralInfo(passedArgSymbol), "General info");
-        adapter.AddFragment(new FragmentGraph(passedArgSymbol), "Graph view");
+        adapter.AddFragment(new FragmentGraph(passedArgSymbol, listSymbol), "Graph view");
 
         viewPager.setAdapter(adapter);
 

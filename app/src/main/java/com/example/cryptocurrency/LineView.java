@@ -24,13 +24,14 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 
 
 public class LineView extends View {
     private Paint lineChart = new Paint();
     private float yMin, yMax;
-    private ArrayList<PointF> points = new ArrayList<>();
+    private List<PointF> points = new ArrayList<>();
     private String symbolName;
     private String[] yAxisValue;
     private String[] xAxisValue;
@@ -263,7 +264,7 @@ public class LineView extends View {
     public void jsonParse(int numberOfData, String timeFrame) throws JSONException {
         // timeFrame = "day" for dayly graph
         // timeFrame = "hour" for hourly graph
-        // timeFrame = "minute" for minutely graph
+        // timeFrame = "minute" for minute graph
         sharedTimeFrame = timeFrame;
         String url = "https://min-api.cryptocompare.com/data/v2/histo" + sharedTimeFrame +
                 "?fsym=" + symbolName  + "&tsym=BTC&limit=" + Integer.toString(numberOfData);

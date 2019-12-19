@@ -1143,12 +1143,14 @@ id line3
 id lineView
 id lineView2
 id lineView3
+id list
 id listMode
 id listView
 id list_item
 id list_item1
 id list_item2
 id list_item3
+id list_spinner
 id masked
 id media_actions
 id message
@@ -1213,6 +1215,7 @@ id snackbar_text
 id snap
 id snapMargins
 id spacer
+id spinner
 id split_action_bar
 id spread
 id spread_inside
@@ -1233,6 +1236,7 @@ id tag_unhandled_key_listeners
 id text
 id text2
 id textCompValue
+id textCompared
 id textGenInfo
 id textNameCoin
 id textSpacerNoButtons
