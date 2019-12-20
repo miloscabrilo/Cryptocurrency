@@ -26,12 +26,14 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 
 
 public class LineView extends View {
     private Paint lineChart = new Paint();
     private float yMin, yMax;
     private List<PointF> points = new ArrayList<>();
+    private List<String> selectedSymbols;
     private String symbolName;
     private String[] yAxisValue;
     private String[] xAxisValue;
@@ -63,7 +65,8 @@ public class LineView extends View {
         super(context, attrs, defStyleAttr);
     }
 
-    public void draw(int i, String s) throws JSONException {
+    public void draw(int numberOfData, String timePeriod, int numberRows, int numberColumns,
+                     List<String> selSymbol, String forSymbolName ) throws JSONException {
 
         blackPaint = new Paint();
         textTitlePaint = new Paint();
@@ -74,7 +77,7 @@ public class LineView extends View {
         textAxisPaint.setTextSize(textAxisSize);
         // Calling jsonParse method to plotting initial graphs.
         try {
-            jsonParse(i,s);
+            jsonParse(numberOfData, timePeriod, numberRows, numberColumns, selSymbol, forSymbolName);
         }
         catch (JSONException e){
             e.printStackTrace();
@@ -102,6 +105,13 @@ public class LineView extends View {
         if (yMin > 1)
             return;
         scaleFactor = 0;
+        // If yMin > 10, decrease yMin and yMax
+        while (yMin > 10) {
+            scaleFactor ++;
+            yMin = yMin / 10;
+            yMax = yMax / 10;
+        }
+        // If yMin < 1, increase yMin and yMax
         while (yMin < 1) {
             scaleFactor --;
             yMin = yMin * 10;
@@ -114,11 +124,12 @@ public class LineView extends View {
 
     // Find the grid for Y axis. It could be defined with different precision.
     private void findGridForYAxis (double Ymax, double Ymin) {
+        /* This is not necessary for bonus part of project.
         // Increase the precision for a 2-point list because the change may be slight.
-        if(points.size() == 2) {
+        if(points.size() == 2 * selectedSymbols.size()) {
             yPrecision = 3;
             return;
-        }
+        }*/
         // Precision of rounding numbers to 2 decimals. It could be changed.
         yPrecision = 2;
         yMax = (float) Math.ceil(Ymax * Math.pow(10, yPrecision));
@@ -143,26 +154,27 @@ public class LineView extends View {
         int xDeltaGrid = (timeAxis.length - 1) / numColumns;
         xAxisValue = new String[numColumns + 1];
         xAxisValueSecondLine = new String[numColumns + 1];
-
         for (int i = 0; i <= numColumns; i++) {
             xAxisValue[i] = " " + getMonth(timeAxis[i * xDeltaGrid])+ " " + getDay(timeAxis[i * xDeltaGrid]);
             xAxisValueSecondLine[i] =  getHour(timeAxis[i * xDeltaGrid]) + ":" + getMinute(timeAxis[i * xDeltaGrid]) + getAmPm(timeAxis[i * xDeltaGrid]);
         }
     }
 
-
     // Setting Y coordinates of points for plotting on canvas.
     private void setDotsY() {
         float yGrid = height / (yMax - yMin);
-        for(int i=0; i<points.size(); i++)
+        for(int i = 0; i < points.size(); i++)
             points.get(i).y = ((height + paddingOffset) - (points.get(i).y - yMin) * yGrid);
     }
 
     // Setting X coordinates of points for plotting on canvas.
     private void setDotsX() {
-        float xGrid = width / (points.size()-1);
-        for(int i=0; i<points.size(); i++)
-            points.get(i).x = i*xGrid + paddingOffset;
+        float xGrid = width / (points.size() / selectedSymbols.size() - 1);
+        for(int i = 0; i < selectedSymbols.size(); i++) {
+            for(int j = 0; j < points.size() / selectedSymbols.size(); j++)
+                points.get(j + i * points.size() / selectedSymbols.size()).x = j * xGrid + paddingOffset;
+        }
+
     }
 
     @Override
@@ -174,8 +186,10 @@ public class LineView extends View {
         }
 
         canvas.drawColor(Color.WHITE);
+        Random rnd = new Random();
         lineChart.setColor(Color.RED);
         lineChart.setStrokeWidth(5);
+        lineChart.setTextSize(25);
 
         // Obtaining canvas dimensions for placing graph.
         width =  (super.getWidth() - 2 * paddingOffset);
@@ -205,12 +219,11 @@ public class LineView extends View {
             // Drawing the title
             float xPos = paddingOffset + width / 2f;
             float yPos = paddingOffset / 2 - ((textTitlePaint.descent() + textTitlePaint.ascent()) / 2) ;
-            canvas.drawText(symbolName + " value compared to BTC by " + sharedTimeFrame, xPos, yPos, textTitlePaint);
+            canvas.drawText(symbolName + " value comparison - by " + sharedTimeFrame, xPos, yPos, textTitlePaint);
 
             // Drawing the scaleFactor
             canvas.drawText("10e" + scaleFactor, paddingOffset / 5, paddingOffset / 2, textAxisPaint);
         }
-
 
         // Drawing columns.
         for (int i = 0; i <= numColumns; i++) {
@@ -222,9 +235,15 @@ public class LineView extends View {
             canvas.drawLine(0 + paddingOffset, i * cellHeight + paddingOffset, width + paddingOffset, paddingOffset+ i * cellHeight, blackPaint);
         }
 
-        // Drawing graphic line.
-        for (int i = 0; i < points.size() - 1; i++) {
-            canvas.drawLine(points.get(i).x, points.get(i).y, points.get(i + 1).x, points.get(i + 1).y, lineChart);
+        // Drawing graphic lines
+        for(int i = 0; i < selectedSymbols.size(); i++) {
+            // Draw graphic line for each symbol from selectedSymbols.
+            for (int j = i * points.size() / selectedSymbols.size(); j < (i + 1) * (points.size() / selectedSymbols.size()) - 1; j++) {
+                canvas.drawLine(points.get(j).x, points.get(j).y, points.get(j + 1).x, points.get(j + 1).y, lineChart);
+            }
+            // Draw legend for each line.
+            canvas.drawText(selectedSymbols.get(i), width + paddingOffset + 5, paddingOffset + textAxisSize * (i + 1) , lineChart);
+            lineChart.setARGB(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
         }
 
         //points.clear();
@@ -261,43 +280,56 @@ public class LineView extends View {
         symbolName = name;
     }
 
-    public void jsonParse(int numberOfData, String timeFrame) throws JSONException {
+    public void jsonParse(final int numberOfData, String timeFrame, int numberRows, int numberColumns, List<String> selSymbol, String forSymbolName) throws JSONException {
         // timeFrame = "day" for dayly graph
         // timeFrame = "hour" for hourly graph
         // timeFrame = "minute" for minute graph
         sharedTimeFrame = timeFrame;
-        String url = "https://min-api.cryptocompare.com/data/v2/histo" + sharedTimeFrame +
-                "?fsym=" + symbolName  + "&tsym=BTC&limit=" + Integer.toString(numberOfData);
         timeAxis = new int[numberOfData + 1];
+        symbolName = forSymbolName;
+        selectedSymbols = selSymbol;
+        numRows = numberRows;
+        numColumns = numberColumns;
+        calculateDimensions();
+        points.clear();
 
-        // Json request for obtain parameters for graph view.
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            points.clear();
-                            JSONObject dataObject = response.getJSONObject("Data");
-                            JSONArray data = dataObject.getJSONArray("Data");
-                            for(int i = 0; i< data.length(); i++) {
-                                JSONObject objectData = data.getJSONObject(i);
-                                PointF dot = new PointF(i, Float.valueOf(objectData.getString("close")));
-                                points.add(dot);
-                                timeAxis[i] = Integer.valueOf(objectData.getString("time"));
+        for ( int i = 0; i < selectedSymbols.size(); i++) {
+            // Preparing URL address.
+            String url = "https://min-api.cryptocompare.com/data/v2/histo" + sharedTimeFrame +
+                    "?fsym=" + symbolName  + "&tsym=" + selectedSymbols.get(i) + "&limit=" + numberOfData;
+
+            // Json request for obtain parameters for graph view.
+            JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
+                    new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            try {
+                                JSONObject dataObject = response.getJSONObject("Data");
+                                JSONArray data = dataObject.getJSONArray("Data");
+                                for(int j = 0; j< data.length(); j++) {
+                                    JSONObject objectData = data.getJSONObject(j);
+                                    PointF dot = new PointF(j, Float.valueOf(objectData.getString("close")));
+                                    points.add(dot);
+                                    if(points.size() <= numberOfData + 1)      // Only once reading.
+                                        timeAxis[j] = Integer.valueOf(objectData.getString("time"));
+                                }
+                                // If all data is loaded.
+                                if( points.size() == selectedSymbols.size() * (numberOfData + 1))
+                                    invalidate();
+                            } catch (JSONException e) {
+                                e.printStackTrace();
                             }
-                            invalidate();
-                        } catch (JSONException e) {
-                            e.printStackTrace();
                         }
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        error.printStackTrace();
-                    }
-                });
-        mQueue.add(request);
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            error.printStackTrace();
+                        }
+                    });
+            mQueue.add(request);
+        }
+        //invalidate();
     }
 
     // Transforming the Month string from "MM" (where M is number) to short text strings.

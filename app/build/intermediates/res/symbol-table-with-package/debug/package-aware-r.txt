@@ -1060,6 +1060,8 @@ id action_text
 id actions
 id activity_chooser_view_content
 id add
+id add_Compared
+id add_spinner
 id alertTitle
 id all
 id always
@@ -1093,6 +1095,8 @@ id custom
 id customPanel
 id decor_content_parent
 id default_activity_button
+id delete_Compared
+id delete_spinner
 id design_bottom_sheet
 id design_menu_item_action_area
 id design_menu_item_action_area_stub
@@ -1146,11 +1150,12 @@ id lineView3
 id list
 id listMode
 id listView
+id list_add_spinner
+id list_delete_spinner
 id list_item
 id list_item1
 id list_item2
 id list_item3
-id list_spinner
 id masked
 id media_actions
 id message
@@ -1215,7 +1220,6 @@ id snackbar_text
 id snap
 id snapMargins
 id spacer
-id spinner
 id split_action_bar
 id spread
 id spread_inside
@@ -1236,7 +1240,6 @@ id tag_unhandled_key_listeners
 id text
 id text2
 id textCompValue
-id textCompared
 id textGenInfo
 id textNameCoin
 id textSpacerNoButtons

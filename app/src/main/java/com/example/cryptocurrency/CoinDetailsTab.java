@@ -45,6 +45,7 @@ public class CoinDetailsTab extends AppCompatActivity {
         adapter.AddFragment(new FragmentGraph(passedArgSymbol, listSymbol), "Graph view");
 
         viewPager.setAdapter(adapter);
+        viewPager.setOffscreenPageLimit(2);
 
         tabLayout.setupWithViewPager(viewPager);
 

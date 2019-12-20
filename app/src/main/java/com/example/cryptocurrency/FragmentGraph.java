@@ -24,15 +24,15 @@ import java.util.List;
 public class FragmentGraph extends Fragment implements View.OnClickListener {
 
     private View view;
-    private TextView textCompare;
+    private TextView addCompare, deleteCompare;
     private LineView lineView, lineView2, lineView3;
     private Button first1D, first1W, first2W, first1M;
     private Button second1D, second3D, second1W;
     private Button third1H, third3H, third1D;
-    private Spinner spinnerSymbol;
+    private Spinner addSpinner, deleteSpinner;
     private String symbolName;
     private List<String> listSymbol;
-    private List<String> selectedSymbol;
+    private List<String> listOfSelectedSymbol;
 
 
     public FragmentGraph() {
@@ -79,8 +79,10 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
         third1H = (Button) view.findViewById(R.id.third1h);
         third3H = (Button) view.findViewById(R.id.third3h);
         third1D = (Button) view.findViewById(R.id.third1D);
-        textCompare = (TextView) view.findViewById(R.id.textCompared);
-        spinnerSymbol = (Spinner) view.findViewById(R.id.spinner);
+        addCompare = (TextView) view.findViewById(R.id.add_Compared);
+        addSpinner = (Spinner) view.findViewById(R.id.add_spinner);
+        deleteCompare = (TextView) view.findViewById(R.id.delete_Compared);
+        deleteSpinner = (Spinner) view.findViewById(R.id.delete_spinner);
 
         // Setting onClick method for all buttons.
         first1D.setOnClickListener(this);
@@ -94,37 +96,44 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
         third3H.setOnClickListener(this);
         third1D.setOnClickListener(this);
 
-        // Initial setting for Button color.
-        initialSetButtonColor();
+        // The ability to select a symbol to display as a multiple comparison on the same graph.
+        // Spinner consists of loaded symbols.
+        addCompare.setText("Add a comparison to the " + symbolName + ":");
+        addCompare.setTypeface(null, Typeface.BOLD);
 
+        // The ability to delete a symbol from multiple comparison.
+        // Spinner consists of shown symbols.
+        deleteCompare.setText("Delete shown comparison with " + symbolName + ":");
+        deleteCompare.setTypeface(null, Typeface.BOLD);
 
+        listOfSelectedSymbol = new ArrayList<String>();
+        listOfSelectedSymbol.add("Select");
+        listOfSelectedSymbol.add("BTC");
 
-        textCompare.setText("Add a comparison to the " + symbolName + ":");
-        textCompare.setTypeface(null, Typeface.BOLD);
-
-
-        //listSymbol.add(0, "");
-        //listSymbol.remove(symbolName);
-        //editListSymbol(symbolName);
-        selectedSymbol = new ArrayList<String>();
-        selectedSymbol.add("BTC");
-
-        final ArrayAdapter<String> adapter = new ArrayAdapter<String>(
+        final ArrayAdapter<String> adapterForAdd = new ArrayAdapter<String>(
                 getActivity(),
                 android.R.layout.simple_spinner_item,
                 listSymbol
         );
-        spinnerSymbol.setAdapter(adapter);
-        spinnerSymbol.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        final ArrayAdapter<String> adapterForDelete = new ArrayAdapter<String>(
+                getActivity(),
+                android.R.layout.simple_spinner_item,
+                listOfSelectedSymbol
+        );
+        addSpinner.setAdapter(adapterForAdd);
+        deleteSpinner.setAdapter(adapterForDelete);
+
+        addSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 if(position != 0) {
-                    selectedSymbol.add(adapter.getItem(position));
+                    listOfSelectedSymbol.add(adapterForAdd.getItem(position));
+                    adapterForDelete.notifyDataSetChanged();
                     listSymbol.remove(position);
-                    adapter.notifyDataSetChanged();
-                    spinnerSymbol.setSelection(0);
+                    adapterForAdd.notifyDataSetChanged();
+                    addSpinner.setSelection(0);
                     initialSetButtonColor();
-                    //jsonParse(
+                    initialDrawing();
                 }
             }
 
@@ -134,43 +143,71 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
             }
         });
 
+        deleteSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if(position != 0) {
+                    listSymbol.add(adapterForDelete.getItem(position));
+                    adapterForAdd.notifyDataSetChanged();
+                    listOfSelectedSymbol.remove(position);
+                    adapterForDelete.notifyDataSetChanged();
+                    deleteSpinner.setSelection(0);
+                    initialSetButtonColor();
+                    initialDrawing();
+                }
+            }
 
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
 
+            }
+        });
+
+        // Initial setting for Button color.
+        initialSetButtonColor();
+        // Initial drawing.
+        initialDrawing();
+
+        return view;
+    }
+
+    // Parse ArrayList to delete element "Select"
+    public List<String> parseList(List<String> list) {
+        List<String> newList = new ArrayList<>();
+        if(list.size() > 1) {
+            for(int i = 1; i < list.size(); i++)
+                newList.add(i - 1, list.get(i));
+        }
+        return newList;
+    }
+
+    // InitialDrawing
+    public void initialDrawing() {
         // Initial graph plotting. By day compared - for one day.
-        // Setting number of columns and rows in which graph is plotted.
-        lineView.setNumColumns(1);
-        lineView.setNumRows(1);
-        lineView.setSymbolName(symbolName);
         try {
-            lineView.draw(1, "day");
+            lineView.draw(1, "day", 2, 1, parseList(listOfSelectedSymbol), symbolName);
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
         // Initial graph plotting. By hour compared - for one day.
-        lineView2.setNumColumns(6);
-        lineView2.setNumRows(5);
-        lineView2.setSymbolName(symbolName);
         try {
-            lineView2.draw(24, "hour");
+            lineView2.draw(24, "hour", 5, 6, parseList(listOfSelectedSymbol), symbolName);
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
         // Initial graph plotting. By minute compared - for one hour.
-        lineView3.setNumColumns(6);
-        lineView3.setNumRows(5);
-        lineView3.setSymbolName(symbolName);
         try {
-            lineView3.draw(60, "minute");
+            lineView3.draw(60, "minute", 5, 6, parseList(listOfSelectedSymbol), symbolName);
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
-        return view;
     }
 
+    // Setting initial color for all buttons.
     public void initialSetButtonColor() {
+
         first1W.setBackgroundColor(Color.WHITE);
         first2W.setBackgroundColor(Color.WHITE);
         first1M.setBackgroundColor(Color.WHITE);
@@ -190,10 +227,8 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.first1D:
-                lineView.setNumColumns(1);
-                lineView.setNumRows(1);
                 try {
-                    lineView.jsonParse(1, "day");
+                    lineView.jsonParse(1, "day", 1, 1, parseList(listOfSelectedSymbol), symbolName);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -203,10 +238,8 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
                 first1D.setBackgroundColor(Color.rgb(0, 157, 111));
                 break;
             case R.id.first1W:
-                lineView.setNumColumns(7);
-                lineView.setNumRows(5);
                 try {
-                    lineView.jsonParse(7, "day");
+                    lineView.jsonParse(7, "day", 5, 7, parseList(listOfSelectedSymbol), symbolName);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -216,10 +249,8 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
                 first1W.setBackgroundColor(Color.rgb(0, 157, 111));
                 break;
             case R.id.first2W:
-                lineView.setNumColumns(7);
-                lineView.setNumRows(5);
                 try {
-                    lineView.jsonParse(14, "day");
+                    lineView.jsonParse(14, "day", 5, 7, parseList(listOfSelectedSymbol), symbolName);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -229,10 +260,8 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
                 first2W.setBackgroundColor(Color.rgb(0, 157, 111));
                 break;
             case R.id.first1M:
-                lineView.setNumColumns(6);
-                lineView.setNumRows(5);
                 try {
-                    lineView.jsonParse(30, "day");
+                    lineView.jsonParse(30, "day", 5, 6, parseList(listOfSelectedSymbol), symbolName);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -242,10 +271,8 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
                 first1M.setBackgroundColor(Color.rgb(0, 157, 111));
                 break;
             case R.id.second1D:
-                lineView2.setNumColumns(6);
-                lineView2.setNumRows(5);
                 try {
-                    lineView2.jsonParse(24, "hour");
+                    lineView2.jsonParse(24, "hour", 5, 6, parseList(listOfSelectedSymbol), symbolName);
                     second3D.setBackgroundColor(Color.WHITE);
                     second1W.setBackgroundColor(Color.WHITE);
                     second1D.setBackgroundColor(Color.rgb(0, 157, 111));
@@ -254,10 +281,8 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
                     e.printStackTrace();
                 }
             case R.id.second3D:
-                lineView2.setNumColumns(6);
-                lineView2.setNumRows(5);
                 try {
-                    lineView2.jsonParse(72, "hour");
+                    lineView2.jsonParse(72, "hour", 5, 6, parseList(listOfSelectedSymbol), symbolName);
                     second1D.setBackgroundColor(Color.WHITE);
                     second1W.setBackgroundColor(Color.WHITE);
                     second3D.setBackgroundColor(Color.rgb(0, 157, 111));
@@ -266,10 +291,8 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
                     e.printStackTrace();
                 }
             case R.id.second1W:
-                lineView2.setNumColumns(6);
-                lineView2.setNumRows(5);
                 try {
-                    lineView2.jsonParse(168, "hour");
+                    lineView2.jsonParse(168, "hour", 5, 6, parseList(listOfSelectedSymbol), symbolName);
                     second1D.setBackgroundColor(Color.WHITE);
                     second3D.setBackgroundColor(Color.WHITE);
                     second1W.setBackgroundColor(Color.rgb(0, 157, 111));
@@ -278,10 +301,8 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
                     e.printStackTrace();
                 }
             case R.id.third1h:
-                lineView3.setNumColumns(6);
-                lineView3.setNumRows(5);
                 try {
-                    lineView3.jsonParse(60, "minute");
+                    lineView3.jsonParse(60, "minute", 5, 6, parseList(listOfSelectedSymbol), symbolName);
                     third1H.setBackgroundColor(Color.rgb(0, 157, 111));
                     third3H.setBackgroundColor(Color.WHITE);
                     third1D.setBackgroundColor(Color.WHITE);
@@ -290,10 +311,8 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
                     e.printStackTrace();
                 }
             case R.id.third3h:
-                lineView3.setNumColumns(6);
-                lineView3.setNumRows(5);
                 try {
-                    lineView3.jsonParse(180, "minute");
+                    lineView3.jsonParse(180, "minute", 5,6, parseList(listOfSelectedSymbol), symbolName);
                     third1H.setBackgroundColor(Color.WHITE);
                     third3H.setBackgroundColor(Color.rgb(0, 157, 111));
                     third1D.setBackgroundColor(Color.WHITE);
@@ -302,10 +321,8 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
                     e.printStackTrace();
                 }
             case R.id.third1D:
-                lineView3.setNumColumns(6);
-                lineView3.setNumRows(5);
                 try {
-                    lineView3.jsonParse(1440, "minute");
+                    lineView3.jsonParse(1440, "minute", 5, 6, parseList(listOfSelectedSymbol), symbolName);
                     third1H.setBackgroundColor(Color.WHITE);
                     third3H.setBackgroundColor(Color.WHITE);
                     third1D.setBackgroundColor(Color.rgb(0, 157, 111));
