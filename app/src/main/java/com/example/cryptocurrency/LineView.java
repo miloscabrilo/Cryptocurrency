@@ -39,6 +39,7 @@ public class LineView extends View {
     private String[] xAxisValue;
     private String[] xAxisValueSecondLine;
     private String sharedTimeFrame;
+    private String currentSymbol;
     private float width, height;
     private int scaleFactor;
     private int numColumns, numRows;
@@ -47,10 +48,14 @@ public class LineView extends View {
     private Paint blackPaint;
     private Paint textAxisPaint;
     private Paint textTitlePaint;
+    private int[] colors;
     private RequestQueue mQueue = Volley.newRequestQueue(this.getContext());
     private int[] timeAxis;
     private int yPrecision;
     private int textAxisSize = 20;          // Text size of axis
+    private CryptocurrencyDatabase db = new CryptocurrencyDatabase(this.getContext());
+    ;
+
 
     public LineView(Context context) {
         super(context);
@@ -86,6 +91,26 @@ public class LineView extends View {
         requestLayout();
     }
 
+    public void setAllDrawingParameters(List<PointF> points, int[] timeAxis, String timeFrame, int numberRows, int numberColumns, List<String> selSymbol, String forSymbolName) {
+        blackPaint = new Paint();
+        textTitlePaint = new Paint();
+        textAxisPaint = new Paint();
+        textTitlePaint.setTextSize(30);
+        textTitlePaint.setFakeBoldText(true);
+        textTitlePaint.setTextAlign(Paint.Align.CENTER);
+        textAxisPaint.setTextSize(textAxisSize);
+        this.points = points;
+        this.timeAxis = timeAxis;
+        this.sharedTimeFrame = timeFrame;
+        this.numRows = numberRows;
+        this.numColumns = numberColumns;
+        this.selectedSymbols = selSymbol;
+        this.symbolName = forSymbolName;
+        calculateDimensions();
+        invalidate();
+        requestLayout();
+    }
+
     // Find minimum and maximum value for Y axis.
     public void findMaxMin() {
         if(points.size() != 0) {
@@ -102,8 +127,8 @@ public class LineView extends View {
 
     // Scale Y values upper to 1. Scale factor will be shown above Y axis in format 10e<scaleFactor>
     public void scalePointY() {
-        if (yMin > 1)
-            return;
+        /*if (yMin > 1)
+            return;*/
         scaleFactor = 0;
         // If yMin > 10, decrease yMin and yMax
         while (yMin > 10) {
@@ -177,6 +202,19 @@ public class LineView extends View {
 
     }
 
+    /*private void setColorPalette() {
+        if(colors != null && colors.length > selectedSymbols.size()) {
+            return;
+        }
+        else {
+            colors = new int[selectedSymbols.size() + 1];
+            Random rnd = new Random();
+            for(int i = 0; i < selectedSymbols.size() + 1; i++) {
+                colors[i] = Color.rgb(rnd.nextInt(255), rnd.nextInt(255), rnd.nextInt(255));
+            }
+        }
+    }*/
+
     @Override
     protected void onDraw(Canvas canvas) {
 
@@ -204,6 +242,7 @@ public class LineView extends View {
             setXAxisValue();
             setDotsY();
             setDotsX();
+            //setColorPalette();
 
             // Drawing the Y axis values.
             for(int i = 0; i <= numRows; i++) {
@@ -244,6 +283,7 @@ public class LineView extends View {
             // Draw legend for each line.
             canvas.drawText(selectedSymbols.get(i), width + paddingOffset + 5, paddingOffset + textAxisSize * (i + 1) , lineChart);
             lineChart.setARGB(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
+            //lineChart.setColor(colors[i]);
         }
 
         //points.clear();
@@ -292,11 +332,12 @@ public class LineView extends View {
         numColumns = numberColumns;
         calculateDimensions();
         points.clear();
-
-        for ( int i = 0; i < selectedSymbols.size(); i++) {
+        int i = 0;
+        for ( i = 0; i < selectedSymbols.size(); i++) {
+            currentSymbol = selectedSymbols.get(i);
             // Preparing URL address.
             String url = "https://min-api.cryptocompare.com/data/v2/histo" + sharedTimeFrame +
-                    "?fsym=" + symbolName  + "&tsym=" + selectedSymbols.get(i) + "&limit=" + numberOfData;
+                    "?fsym=" + symbolName  + "&tsym=" + currentSymbol + "&limit=" + numberOfData;
 
             // Json request for obtain parameters for graph view.
             JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
@@ -312,6 +353,7 @@ public class LineView extends View {
                                     points.add(dot);
                                     if(points.size() <= numberOfData + 1)      // Only once reading.
                                         timeAxis[j] = Integer.valueOf(objectData.getString("time"));
+                                    db.insertGraphLine(symbolName, currentSymbol, dot.x, dot.y, timeAxis[j], sharedTimeFrame, numRows, numColumns);
                                 }
                                 // If all data is loaded.
                                 if( points.size() == selectedSymbols.size() * (numberOfData + 1))

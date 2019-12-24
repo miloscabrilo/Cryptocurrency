@@ -7,7 +7,7 @@ public class Coin {
     private String nameCoin;
     private String symbolCoin;
 
-    public Coin(String image, String name,String symbol) {
+    public Coin(String image, String name, String symbol) {
         this.setImageCoin(image);
         this.setNameCoin(name);
         this.setSymbolCoin(symbol);

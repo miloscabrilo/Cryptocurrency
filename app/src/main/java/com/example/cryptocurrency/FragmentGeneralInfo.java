@@ -1,5 +1,6 @@
 package com.example.cryptocurrency;
 
+import android.database.Cursor;
 import android.graphics.Typeface;
 import android.os.Bundle;
 
@@ -35,11 +36,14 @@ public class FragmentGeneralInfo extends Fragment {
     private RequestQueue mQueue;
     private String symbolName;
     private List<String> listSymbol;
+    private boolean internetAccess;
+    private CryptocurrencyDatabase db;
 
     public FragmentGeneralInfo() {
     }
-    public FragmentGeneralInfo(String symbol) {
+    public FragmentGeneralInfo(String symbol, boolean internetAccess) {
         symbolName = symbol;
+        this.internetAccess = internetAccess;
     }
 
     public FragmentGeneralInfo(String symbol, List<String> symbols) {
@@ -71,16 +75,31 @@ public class FragmentGeneralInfo extends Fragment {
         };
         listGenInfo = new ArrayList<>();
         listCompareValue = new ArrayList<>();
-        try {
-            jsonParse();
-            jsonParseComparedValues();
+
+        db = new CryptocurrencyDatabase(getContext());
+        // Checking internet Access. If Internet is available, use data from URL, otherwise use data from DB if exist.
+        if(internetAccess) {
+            try {
+                jsonParse();
+                jsonParseComparedValues();
+            }
+            catch (JSONException e) {
+                e.printStackTrace();
+            }
+
         }
-        catch (JSONException e) {
-            e.printStackTrace();
+        else {
+            Cursor res = db.readSelectedCoin();
+            while(res.moveToNext()) {
+                if( res.getString(0).equals(symbolName)) {
+                    textGenInfo.setText(res.getString(1));
+                    textCompValue.setText(res.getString(2));
+                    break;
+                }
+            }
         }
 
         return view;
-
     }
 
 
@@ -108,6 +127,8 @@ public class FragmentGeneralInfo extends Fragment {
                                 textCompValue.append("\n");
                                 textCompValue.append(listCompareValue.get(i));
                             }
+                            db.insertGenInfo(symbolName, textGenInfo.getText().toString(), textCompValue.getText().toString());
+                            //db.insertGenInfo(symbolName, symbolName, symbolName);
 
                         } catch (JSONException e) {
                             e.printStackTrace();

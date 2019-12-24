@@ -1,6 +1,8 @@
 package com.example.cryptocurrency;
 
+import android.database.Cursor;
 import android.graphics.Color;
+import android.graphics.PointF;
 import android.graphics.Typeface;
 import android.os.Bundle;
 
@@ -15,6 +17,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONException;
 
@@ -33,6 +36,12 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
     private String symbolName;
     private List<String> listSymbol;
     private List<String> listOfSelectedSymbol;
+    private List<PointF> pointsList = new ArrayList<>();
+    private List<PointF> pointsList2 = new ArrayList<>();
+    private List<PointF> pointsList3 = new ArrayList<>();
+    private int[] timeAxis;
+    private boolean internetAccess;
+    private CryptocurrencyDatabase db;
 
 
     public FragmentGraph() {
@@ -42,11 +51,12 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
         symbolName = symbol;
     }
 
-    public FragmentGraph(String symbol, List<String> symbols) {
+    public FragmentGraph(String symbol, List<String> symbols, boolean internetAccess) {
         symbolName = symbol;
         listSymbol = symbols;
         listSymbol.remove(symbolName);
         listSymbol.remove("BTC");
+        this.internetAccess = internetAccess;
     }
 
     @Override
@@ -96,6 +106,8 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
         third3H.setOnClickListener(this);
         third1D.setOnClickListener(this);
 
+        db = new CryptocurrencyDatabase(getContext());
+
         // The ability to select a symbol to display as a multiple comparison on the same graph.
         // Spinner consists of loaded symbols.
         addCompare.setText("Add a comparison to the " + symbolName + ":");
@@ -126,14 +138,23 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
         addSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if(position != 0) {
-                    listOfSelectedSymbol.add(adapterForAdd.getItem(position));
-                    adapterForDelete.notifyDataSetChanged();
-                    listSymbol.remove(position);
-                    adapterForAdd.notifyDataSetChanged();
+                if(internetAccess) {
+                    if(position != 0) {
+                        listOfSelectedSymbol.add(adapterForAdd.getItem(position));
+                        adapterForDelete.notifyDataSetChanged();
+                        listSymbol.remove(position);
+                        adapterForAdd.notifyDataSetChanged();
+                        addSpinner.setSelection(0);
+                        initialSetButtonColor();
+                        initialDrawing();
+                    }
+                }
+                else {
                     addSpinner.setSelection(0);
-                    initialSetButtonColor();
-                    initialDrawing();
+                    /*Toast toast = Toast.makeText(getContext(),
+                            "No Internet Connection",
+                            Toast.LENGTH_SHORT);
+                    toast.show();*/
                 }
             }
 
@@ -146,14 +167,27 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
         deleteSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if(position != 0) {
-                    listSymbol.add(adapterForDelete.getItem(position));
-                    adapterForAdd.notifyDataSetChanged();
-                    listOfSelectedSymbol.remove(position);
-                    adapterForDelete.notifyDataSetChanged();
-                    deleteSpinner.setSelection(0);
-                    initialSetButtonColor();
-                    initialDrawing();
+                if(internetAccess) {
+                    if(position != 0) {
+                        listSymbol.add(adapterForDelete.getItem(position));
+                        adapterForAdd.notifyDataSetChanged();
+                        listOfSelectedSymbol.remove(position);
+                        adapterForDelete.notifyDataSetChanged();
+                        deleteSpinner.setSelection(0);
+                        initialSetButtonColor();
+                        initialDrawing();
+                    }
+                }
+                else {
+                    if(position != 0) {
+                        /*db.deleteGraphLine(symbolName, adapterForDelete.getItem(position));
+                        listSymbol.add(adapterForDelete.getItem(position));
+                        adapterForAdd.notifyDataSetChanged();
+                        listOfSelectedSymbol.remove(position);
+                        adapterForDelete.notifyDataSetChanged();*/
+                        deleteSpinner.setSelection(0);
+                        //initialDrawing();
+                    }
                 }
             }
 
@@ -165,8 +199,11 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
 
         // Initial setting for Button color.
         initialSetButtonColor();
+
         // Initial drawing.
         initialDrawing();
+
+
 
         return view;
     }
@@ -183,25 +220,34 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
 
     // InitialDrawing
     public void initialDrawing() {
-        // Initial graph plotting. By day compared - for one day.
-        try {
-            lineView.draw(1, "day", 2, 1, parseList(listOfSelectedSymbol), symbolName);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        if(internetAccess) {
+            db.deleteGraphs();
+            // Initial graph plotting. By day compared - for one day.
+            try {
+                lineView.draw(1, "day", 2, 1, parseList(listOfSelectedSymbol), symbolName);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
 
-        // Initial graph plotting. By hour compared - for one day.
-        try {
-            lineView2.draw(24, "hour", 5, 6, parseList(listOfSelectedSymbol), symbolName);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+            // Initial graph plotting. By hour compared - for one day.
+            try {
+                lineView2.draw(24, "hour", 5, 6, parseList(listOfSelectedSymbol), symbolName);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
 
-        // Initial graph plotting. By minute compared - for one hour.
-        try {
-            lineView3.draw(60, "minute", 5, 6, parseList(listOfSelectedSymbol), symbolName);
-        } catch (JSONException e) {
-            e.printStackTrace();
+            // Initial graph plotting. By minute compared - for one hour.
+            try {
+                lineView3.draw(60, "minute", 5, 6, parseList(listOfSelectedSymbol), symbolName);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        else {
+
+            drawGraphsOffline(lineView, "day", pointsList);
+            drawGraphsOffline(lineView2, "hour", pointsList2);
+            drawGraphsOffline(lineView3, "minute", pointsList3);
         }
     }
 
@@ -225,112 +271,150 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
     // Redefine onClick method for Buttons.
     @Override
     public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.first1D:
-                try {
-                    lineView.jsonParse(1, "day", 1, 1, parseList(listOfSelectedSymbol), symbolName);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                first1W.setBackgroundColor(Color.WHITE);
-                first2W.setBackgroundColor(Color.WHITE);
-                first1M.setBackgroundColor(Color.WHITE);
-                first1D.setBackgroundColor(Color.rgb(0, 157, 111));
-                break;
-            case R.id.first1W:
-                try {
-                    lineView.jsonParse(7, "day", 5, 7, parseList(listOfSelectedSymbol), symbolName);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                first1D.setBackgroundColor(Color.WHITE);
-                first2W.setBackgroundColor(Color.WHITE);
-                first1M.setBackgroundColor(Color.WHITE);
-                first1W.setBackgroundColor(Color.rgb(0, 157, 111));
-                break;
-            case R.id.first2W:
-                try {
-                    lineView.jsonParse(14, "day", 5, 7, parseList(listOfSelectedSymbol), symbolName);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                first1D.setBackgroundColor(Color.WHITE);
-                first1W.setBackgroundColor(Color.WHITE);
-                first1M.setBackgroundColor(Color.WHITE);
-                first2W.setBackgroundColor(Color.rgb(0, 157, 111));
-                break;
-            case R.id.first1M:
-                try {
-                    lineView.jsonParse(30, "day", 5, 6, parseList(listOfSelectedSymbol), symbolName);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                first1D.setBackgroundColor(Color.WHITE);
-                first1W.setBackgroundColor(Color.WHITE);
-                first2W.setBackgroundColor(Color.WHITE);
-                first1M.setBackgroundColor(Color.rgb(0, 157, 111));
-                break;
-            case R.id.second1D:
-                try {
-                    lineView2.jsonParse(24, "hour", 5, 6, parseList(listOfSelectedSymbol), symbolName);
-                    second3D.setBackgroundColor(Color.WHITE);
-                    second1W.setBackgroundColor(Color.WHITE);
-                    second1D.setBackgroundColor(Color.rgb(0, 157, 111));
+        if(internetAccess) {
+            switch (v.getId()) {
+                case R.id.first1D:
+                    try {
+                        lineView.jsonParse(1, "day", 1, 1, parseList(listOfSelectedSymbol), symbolName);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    first1W.setBackgroundColor(Color.WHITE);
+                    first2W.setBackgroundColor(Color.WHITE);
+                    first1M.setBackgroundColor(Color.WHITE);
+                    first1D.setBackgroundColor(Color.rgb(0, 157, 111));
                     break;
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            case R.id.second3D:
-                try {
-                    lineView2.jsonParse(72, "hour", 5, 6, parseList(listOfSelectedSymbol), symbolName);
-                    second1D.setBackgroundColor(Color.WHITE);
-                    second1W.setBackgroundColor(Color.WHITE);
-                    second3D.setBackgroundColor(Color.rgb(0, 157, 111));
+                case R.id.first1W:
+                    try {
+                        lineView.jsonParse(7, "day", 5, 7, parseList(listOfSelectedSymbol), symbolName);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    first1D.setBackgroundColor(Color.WHITE);
+                    first2W.setBackgroundColor(Color.WHITE);
+                    first1M.setBackgroundColor(Color.WHITE);
+                    first1W.setBackgroundColor(Color.rgb(0, 157, 111));
                     break;
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            case R.id.second1W:
-                try {
-                    lineView2.jsonParse(168, "hour", 5, 6, parseList(listOfSelectedSymbol), symbolName);
-                    second1D.setBackgroundColor(Color.WHITE);
-                    second3D.setBackgroundColor(Color.WHITE);
-                    second1W.setBackgroundColor(Color.rgb(0, 157, 111));
+                case R.id.first2W:
+                    try {
+                        lineView.jsonParse(14, "day", 5, 7, parseList(listOfSelectedSymbol), symbolName);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    first1D.setBackgroundColor(Color.WHITE);
+                    first1W.setBackgroundColor(Color.WHITE);
+                    first1M.setBackgroundColor(Color.WHITE);
+                    first2W.setBackgroundColor(Color.rgb(0, 157, 111));
                     break;
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            case R.id.third1h:
-                try {
-                    lineView3.jsonParse(60, "minute", 5, 6, parseList(listOfSelectedSymbol), symbolName);
-                    third1H.setBackgroundColor(Color.rgb(0, 157, 111));
-                    third3H.setBackgroundColor(Color.WHITE);
-                    third1D.setBackgroundColor(Color.WHITE);
+                case R.id.first1M:
+                    try {
+                        lineView.jsonParse(30, "day", 5, 6, parseList(listOfSelectedSymbol), symbolName);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    first1D.setBackgroundColor(Color.WHITE);
+                    first1W.setBackgroundColor(Color.WHITE);
+                    first2W.setBackgroundColor(Color.WHITE);
+                    first1M.setBackgroundColor(Color.rgb(0, 157, 111));
                     break;
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            case R.id.third3h:
-                try {
-                    lineView3.jsonParse(180, "minute", 5,6, parseList(listOfSelectedSymbol), symbolName);
-                    third1H.setBackgroundColor(Color.WHITE);
-                    third3H.setBackgroundColor(Color.rgb(0, 157, 111));
-                    third1D.setBackgroundColor(Color.WHITE);
-                    break;
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            case R.id.third1D:
-                try {
-                    lineView3.jsonParse(1440, "minute", 5, 6, parseList(listOfSelectedSymbol), symbolName);
-                    third1H.setBackgroundColor(Color.WHITE);
-                    third3H.setBackgroundColor(Color.WHITE);
-                    third1D.setBackgroundColor(Color.rgb(0, 157, 111));
-                    break;
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+                case R.id.second1D:
+                    try {
+                        lineView2.jsonParse(24, "hour", 5, 6, parseList(listOfSelectedSymbol), symbolName);
+                        second3D.setBackgroundColor(Color.WHITE);
+                        second1W.setBackgroundColor(Color.WHITE);
+                        second1D.setBackgroundColor(Color.rgb(0, 157, 111));
+                        break;
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                case R.id.second3D:
+                    try {
+                        lineView2.jsonParse(72, "hour", 5, 6, parseList(listOfSelectedSymbol), symbolName);
+                        second1D.setBackgroundColor(Color.WHITE);
+                        second1W.setBackgroundColor(Color.WHITE);
+                        second3D.setBackgroundColor(Color.rgb(0, 157, 111));
+                        break;
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                case R.id.second1W:
+                    try {
+                        lineView2.jsonParse(168, "hour", 5, 6, parseList(listOfSelectedSymbol), symbolName);
+                        second1D.setBackgroundColor(Color.WHITE);
+                        second3D.setBackgroundColor(Color.WHITE);
+                        second1W.setBackgroundColor(Color.rgb(0, 157, 111));
+                        break;
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                case R.id.third1h:
+                    try {
+                        lineView3.jsonParse(60, "minute", 5, 6, parseList(listOfSelectedSymbol), symbolName);
+                        third1H.setBackgroundColor(Color.rgb(0, 157, 111));
+                        third3H.setBackgroundColor(Color.WHITE);
+                        third1D.setBackgroundColor(Color.WHITE);
+                        break;
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                case R.id.third3h:
+                    try {
+                        lineView3.jsonParse(180, "minute", 5, 6, parseList(listOfSelectedSymbol), symbolName);
+                        third1H.setBackgroundColor(Color.WHITE);
+                        third3H.setBackgroundColor(Color.rgb(0, 157, 111));
+                        third1D.setBackgroundColor(Color.WHITE);
+                        break;
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                case R.id.third1D:
+                    try {
+                        lineView3.jsonParse(1440, "minute", 5, 6, parseList(listOfSelectedSymbol), symbolName);
+                        third1H.setBackgroundColor(Color.WHITE);
+                        third3H.setBackgroundColor(Color.WHITE);
+                        third1D.setBackgroundColor(Color.rgb(0, 157, 111));
+                        break;
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+            }
         }
+        else {
+            Toast toast = Toast.makeText(getContext(),
+                    "No Internet Connection",
+                    Toast.LENGTH_SHORT);
+            toast.show();
+        }
+    }
+
+    public void drawGraphsOffline(LineView lineView, String timeFrame, List<PointF> points) {
+        if(listOfSelectedSymbol.size() > 0)
+            listOfSelectedSymbol.clear();
+        listOfSelectedSymbol.add("Select");
+        Cursor res = db.readGraphLine(symbolName,  timeFrame);
+        timeAxis = new int[res.getCount()];
+        int i = 0;
+        int numColumns = 1;
+        int numRows = 1;
+        while(res.moveToNext()){
+            PointF dot = new PointF(res.getFloat(2), res.getFloat(3));
+            points.add(dot);
+            numRows = res.getInt(6);
+            numColumns = res.getInt(7);
+            timeAxis[i] = res.getInt(4);
+            if(!listOfSelectedSymbol.contains(res.getString(1)))
+                listOfSelectedSymbol.add(res.getString(1));
+            i++;
+        }
+        if(parseList(listOfSelectedSymbol).size() == 0)
+            return;
+        int[] time = new int[points.size() / parseList(listOfSelectedSymbol).size()];
+        for(int j = 0; j < time.length; j++) {
+            time[j] = timeAxis[j];
+        }
+        if(points.size() > 0)
+            lineView.setAllDrawingParameters(points, time, timeFrame, numRows, numColumns, parseList(listOfSelectedSymbol), symbolName);
+
     }
 
 }

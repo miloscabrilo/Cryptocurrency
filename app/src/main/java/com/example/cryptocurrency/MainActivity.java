@@ -9,15 +9,24 @@
  */
 package com.example.cryptocurrency;
 
+import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -29,6 +38,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,11 +54,13 @@ public class MainActivity extends AppCompatActivity {
     public static final String ARG_IMAGE_FROM_MAIN = "image_coin";
     public static final String ARG_SYMBOL_FROM_MAIN = "symbol_coin";
     public static final String ARG_LIST_SYMBOL = "list_symbol";
+    public static final String ARG_INTERNET_ACCESS = "internet_access";
     private List<String> listSymbol;
     private ListView listView;
     private CoinArrayAdapter coinArrayAdapter;
     private RequestQueue mQueue;
     private int numberDataPerPages;
+    private CryptocurrencyDatabase db;
 
 
     // Main Activity create
@@ -60,14 +78,42 @@ public class MainActivity extends AppCompatActivity {
         listView.setFocusable(false);
         listSymbol = new ArrayList<>();
         listSymbol.add("Select");
+        db = new CryptocurrencyDatabase(this);
+
+        coinArrayAdapter.setInternetAccess(isNetworkConnected());
 
 
-        // Use jsonParse method to get Cryptocurrencies.
-        if (coinArrayAdapter.getCount() == 0) {
-            try {
-                jsonParse(coinArrayAdapter.getCount());
-            } catch (JSONException e) {
-                e.printStackTrace();
+
+        if(!isNetworkConnected()) {
+            Cursor res = db.readCoins();
+            //coinArrayAdapter.setListWithoutInternet(res);
+            if(res.getCount() == 0) {
+                showMessage("Error", "Nothing found");
+                return;
+            }
+            StringBuffer buffer = new StringBuffer();
+            while(res.moveToNext()) {
+                buffer.append("ID :" + res.getString(0) + "\n");
+                buffer.append("NAME :" + res.getString(1) + "\n");
+                buffer.append("SYMBOL :" + res.getString(2) + "\n");
+                //buffer.append("IMAGE :" + res.getString(3) + "\n");
+                Coin coin = new Coin( res.getString(2), res.getString(0), res.getString(1));
+                listSymbol.add(res.getString(1));
+                coinArrayAdapter.add(coin);
+            }
+            showMessage("DATA", buffer.toString());
+        }
+        else {
+            db.deleteCoins();
+            db.deleteSecetedCoin();
+            db.deleteGraphs();
+            // Use jsonParse method to get Cryptocurrencies.
+            if (coinArrayAdapter.getCount() == 0) {
+                try {
+                    jsonParse(coinArrayAdapter.getCount());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
@@ -82,6 +128,7 @@ public class MainActivity extends AppCompatActivity {
                 intent.putExtra(ARG_NAME_FROM_MAIN, nameView.getText());
                 intent.putExtra(ARG_SYMBOL_FROM_MAIN, symbolView.getText());
                 intent.putExtra(ARG_IMAGE_FROM_MAIN, coinArrayAdapter.getItem(position).getImageCoin());
+                intent.putExtra(ARG_INTERNET_ACCESS, isNetworkConnected());
                 intent.putStringArrayListExtra(ARG_LIST_SYMBOL, (ArrayList<String>)listSymbol);
                 startActivity(intent);
             }
@@ -141,6 +188,11 @@ public class MainActivity extends AppCompatActivity {
                         Coin coin = new Coin(imageUrl, coinName, symbol);
                         coinArrayAdapter.add(coin);
                         listSymbol.add(symbol);
+
+                        //URL url = new URL(imageUrl);
+                        //Bitmap image = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+
+                        db.insertCoins(coinName, symbol, imageUrl);
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -154,5 +206,26 @@ public class MainActivity extends AppCompatActivity {
         });
         mQueue.add(request);
     }
+
+    private boolean isNetworkConnected() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        return cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isConnected();
+    }
+
+    public void showMessage(String title, String message) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setCancelable(true);
+        builder.setTitle(title);
+        builder.setMessage(message);
+        builder.show();
+    }
+
+    public static byte[] getBitmapAsByteArray(Bitmap bitmap) {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 0, outputStream);
+        return outputStream.toByteArray();
+    }
+
 
 }
