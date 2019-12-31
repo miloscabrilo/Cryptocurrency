@@ -1,3 +1,8 @@
+/**
+ * View Pager Adapter class which is extended from Fragment Pager Adapter class.
+ *
+ */
+
 package com.example.cryptocurrency;
 
 import androidx.annotation.Nullable;

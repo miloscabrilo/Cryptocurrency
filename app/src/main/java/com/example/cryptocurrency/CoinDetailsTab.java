@@ -1,3 +1,7 @@
+/**
+ * Class for implemented Tab Menu.
+ */
+
 package com.example.cryptocurrency;
 
 import android.os.Bundle;
@@ -11,6 +15,7 @@ import android.widget.TextView;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
+
 
 public class CoinDetailsTab extends AppCompatActivity {
     private TextView coinName, coinSymbol;
@@ -40,7 +45,7 @@ public class CoinDetailsTab extends AppCompatActivity {
 
         coinName.setText(passedArgName);
         coinSymbol.setText(passedArgSymbol);
-        Picasso.get().load(passedArgImage).resize(120, 120).into(coinImage);
+        Picasso.get().load(passedArgImage).resize(70, 70).into(coinImage);
 
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
         adapter.AddFragment(new FragmentGeneralInfo(passedArgSymbol, internetAccess), "General info");

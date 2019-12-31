@@ -1,3 +1,7 @@
+/**
+ * First - General information fragment.
+ */
+
 package com.example.cryptocurrency;
 
 import android.database.Cursor;
@@ -35,7 +39,6 @@ public class FragmentGeneralInfo extends Fragment {
     private String[] listToCompare;
     private RequestQueue mQueue;
     private String symbolName;
-    private List<String> listSymbol;
     private boolean internetAccess;
     private CryptocurrencyDatabase db;
 
@@ -44,11 +47,6 @@ public class FragmentGeneralInfo extends Fragment {
     public FragmentGeneralInfo(String symbol, boolean internetAccess) {
         symbolName = symbol;
         this.internetAccess = internetAccess;
-    }
-
-    public FragmentGeneralInfo(String symbol, List<String> symbols) {
-        symbolName = symbol;
-        listSymbol = symbols;
     }
 
     @Override
@@ -89,6 +87,7 @@ public class FragmentGeneralInfo extends Fragment {
 
         }
         else {
+            // Reading from database.
             Cursor res = db.readSelectedCoin();
             while(res.moveToNext()) {
                 if( res.getString(0).equals(symbolName)) {
@@ -102,12 +101,10 @@ public class FragmentGeneralInfo extends Fragment {
         return view;
     }
 
-
     // JSON deserialize method for compare selected Cryptocurrency with string array Cryptocurrencies.
     public void jsonParseComparedValues() throws JSONException {
         //https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETC&tsyms=USD,ETH,EVN,DOGE,ZEC,USD,EUR
         String url = "https://min-api.cryptocompare.com/data/price?fsym=" + symbolName + "&tsyms=" + listToCompare[0];
-        //url = url + listToCompare[0];
         for(int i = 1; i < listToCompare.length; i++)
             url = url + "," + listToCompare[i];
 
@@ -127,8 +124,8 @@ public class FragmentGeneralInfo extends Fragment {
                                 textCompValue.append("\n");
                                 textCompValue.append(listCompareValue.get(i));
                             }
+                            // Insert general information and comparison values for selected Cryptocurrency in database
                             db.insertGenInfo(symbolName, textGenInfo.getText().toString(), textCompValue.getText().toString());
-                            //db.insertGenInfo(symbolName, symbolName, symbolName);
 
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -159,7 +156,7 @@ public class FragmentGeneralInfo extends Fragment {
                             JSONObject display = response.getJSONObject("DISPLAY");
                             JSONObject symbol = display.getJSONObject(symbolName);
                             JSONObject usd = symbol.getJSONObject("USD");
-                            Iterator<?> keys = usd.keys();      // Data are unknown.
+                            Iterator<?> keys = usd.keys();      // Data is unknown.
                             while( keys.hasNext() ) {
                                 String name = (String) keys.next();
                                 String value = usd.getString(name);

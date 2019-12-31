@@ -1,3 +1,7 @@
+/**
+ * Line View class for drawing a graph.
+ */
+
 package com.example.cryptocurrency;
 
 import android.content.Context;
@@ -34,13 +38,14 @@ public class LineView extends View {
     private float yMin, yMax;
     private List<PointF> points = new ArrayList<>();
     private List<String> selectedSymbols;
+    private List<String> tempSelectedSymbols = new ArrayList<>();
     private String symbolName;
     private String[] yAxisValue;
     private String[] xAxisValue;
     private String[] xAxisValueSecondLine;
     private String sharedTimeFrame;
-    private String currentSymbol;
     private float width, height;
+    private float[] yDots;
     private int scaleFactor;
     private int numColumns, numRows;
     private int cellWidth, cellHeight;
@@ -48,13 +53,11 @@ public class LineView extends View {
     private Paint blackPaint;
     private Paint textAxisPaint;
     private Paint textTitlePaint;
-    private int[] colors;
     private RequestQueue mQueue = Volley.newRequestQueue(this.getContext());
     private int[] timeAxis;
     private int yPrecision;
     private int textAxisSize = 20;          // Text size of axis
     private CryptocurrencyDatabase db = new CryptocurrencyDatabase(this.getContext());
-    ;
 
 
     public LineView(Context context) {
@@ -70,7 +73,17 @@ public class LineView extends View {
         super(context, attrs, defStyleAttr);
     }
 
-    public void draw(int numberOfData, String timePeriod, int numberRows, int numberColumns,
+    /**
+     * Draw method.
+     *
+     * @param numberOfData  - List of points which would be displayed
+     * @param timeFrame     - Time frame, e.g. "day", "hour", "minute"
+     * @param numberRows    - Number of rows for graph plotting
+     * @param numberColumns - Number of columns for graph plotting
+     * @param selSymbol     - List of loaded symbols
+     * @param forSymbolName - Selected symbol
+     */
+    public void draw(int numberOfData, String timeFrame, int numberRows, int numberColumns,
                      List<String> selSymbol, String forSymbolName ) throws JSONException {
 
         blackPaint = new Paint();
@@ -82,7 +95,7 @@ public class LineView extends View {
         textAxisPaint.setTextSize(textAxisSize);
         // Calling jsonParse method to plotting initial graphs.
         try {
-            jsonParse(numberOfData, timePeriod, numberRows, numberColumns, selSymbol, forSymbolName);
+            jsonParse(numberOfData, timeFrame, numberRows, numberColumns, selSymbol, forSymbolName);
         }
         catch (JSONException e){
             e.printStackTrace();
@@ -91,6 +104,17 @@ public class LineView extends View {
         requestLayout();
     }
 
+    /**
+     * Set all drawing parameters for selected Cryptocurrency.
+     *
+     * @param points        - List of points which would be displayed
+     * @param timeAxis      - Time in seconds - array
+     * @param timeFrame     - Time frame, e.g. "day", "hour", "minute"
+     * @param numberRows    - Number of rows for graph plotting
+     * @param numberColumns - Number of columns for graph plotting
+     * @param selSymbol     - List of loaded symbols
+     * @param forSymbolName - Selected symbol
+     */
     public void setAllDrawingParameters(List<PointF> points, int[] timeAxis, String timeFrame, int numberRows, int numberColumns, List<String> selSymbol, String forSymbolName) {
         blackPaint = new Paint();
         textTitlePaint = new Paint();
@@ -125,10 +149,8 @@ public class LineView extends View {
         }
     }
 
-    // Scale Y values upper to 1. Scale factor will be shown above Y axis in format 10e<scaleFactor>
+    // Scale Y values between 1 and 10. Scale factor will be shown above Y axis in format 10e<scaleFactor>
     public void scalePointY() {
-        /*if (yMin > 1)
-            return;*/
         scaleFactor = 0;
         // If yMin > 10, decrease yMin and yMax
         while (yMin > 10) {
@@ -142,23 +164,19 @@ public class LineView extends View {
             yMin = yMin * 10;
             yMax = yMax * 10;
         }
+        if(points.size() > 0)
+            yDots = new float[points.size()];
         for (int i = 0; i < points.size(); i++) {
-            points.get(i).y = points.get(i).y * (float) Math.pow(10, -scaleFactor);
+            yDots[i] = points.get(i).y * (float) Math.pow(10, -scaleFactor);
         }
     }
 
     // Find the grid for Y axis. It could be defined with different precision.
-    private void findGridForYAxis (double Ymax, double Ymin) {
-        /* This is not necessary for bonus part of project.
-        // Increase the precision for a 2-point list because the change may be slight.
-        if(points.size() == 2 * selectedSymbols.size()) {
-            yPrecision = 3;
-            return;
-        }*/
+    private void findGridForYAxis () {
         // Precision of rounding numbers to 2 decimals. It could be changed.
         yPrecision = 2;
-        yMax = (float) Math.ceil(Ymax * Math.pow(10, yPrecision));
-        yMin = (float) (Math.ceil(Ymin * Math.pow(10, yPrecision)) - 1);
+        yMax = (float) Math.ceil(yMax * Math.pow(10, yPrecision));
+        yMin = (float) (Math.ceil(yMin * Math.pow(10, yPrecision)) - 1);
 
         // After finding min i max value for Y axis, scaling those numbers to format ( Y values > 1 ) i.e. 1.22, 4.57 ...
         yMax = (float) (yMax * Math.pow(10, -yPrecision));
@@ -189,7 +207,7 @@ public class LineView extends View {
     private void setDotsY() {
         float yGrid = height / (yMax - yMin);
         for(int i = 0; i < points.size(); i++)
-            points.get(i).y = ((height + paddingOffset) - (points.get(i).y - yMin) * yGrid);
+            yDots[i] = ((height + paddingOffset) - (yDots[i] - yMin) * yGrid);
     }
 
     // Setting X coordinates of points for plotting on canvas.
@@ -199,21 +217,7 @@ public class LineView extends View {
             for(int j = 0; j < points.size() / selectedSymbols.size(); j++)
                 points.get(j + i * points.size() / selectedSymbols.size()).x = j * xGrid + paddingOffset;
         }
-
     }
-
-    /*private void setColorPalette() {
-        if(colors != null && colors.length > selectedSymbols.size()) {
-            return;
-        }
-        else {
-            colors = new int[selectedSymbols.size() + 1];
-            Random rnd = new Random();
-            for(int i = 0; i < selectedSymbols.size() + 1; i++) {
-                colors[i] = Color.rgb(rnd.nextInt(255), rnd.nextInt(255), rnd.nextInt(255));
-            }
-        }
-    }*/
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -235,14 +239,14 @@ public class LineView extends View {
 
         // Initializing all chart adjustment functions.
         if(points.size() != 0){
+
             findMaxMin();
             scalePointY();
-            findGridForYAxis(yMax, yMin);
+            findGridForYAxis();
             setYAxisValue();
             setXAxisValue();
             setDotsY();
             setDotsX();
-            //setColorPalette();
 
             // Drawing the Y axis values.
             for(int i = 0; i <= numRows; i++) {
@@ -269,24 +273,21 @@ public class LineView extends View {
             canvas.drawLine(i * cellWidth + paddingOffset, 0 + paddingOffset, i * cellWidth + paddingOffset, paddingOffset + height, blackPaint);
         }
 
-        // Drawing rows.
+        // Drawing rows
         for (int i = 0; i <= numRows; i++) {
             canvas.drawLine(0 + paddingOffset, i * cellHeight + paddingOffset, width + paddingOffset, paddingOffset+ i * cellHeight, blackPaint);
         }
-
         // Drawing graphic lines
         for(int i = 0; i < selectedSymbols.size(); i++) {
             // Draw graphic line for each symbol from selectedSymbols.
             for (int j = i * points.size() / selectedSymbols.size(); j < (i + 1) * (points.size() / selectedSymbols.size()) - 1; j++) {
-                canvas.drawLine(points.get(j).x, points.get(j).y, points.get(j + 1).x, points.get(j + 1).y, lineChart);
+                canvas.drawLine(points.get(j).x, yDots[j], points.get(j + 1).x, yDots[j+1], lineChart);
             }
             // Draw legend for each line.
             canvas.drawText(selectedSymbols.get(i), width + paddingOffset + 5, paddingOffset + textAxisSize * (i + 1) , lineChart);
             lineChart.setARGB(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
-            //lineChart.setColor(colors[i]);
         }
 
-        //points.clear();
         super.onDraw(canvas);
     }
 
@@ -320,6 +321,16 @@ public class LineView extends View {
         symbolName = name;
     }
 
+    /**
+     * JSON deserialize method for given parameters. Read data from URL.
+     *
+     * @param numberOfData  - List of points which would be displayed
+     * @param timeFrame     - Time frame, e.g. "day", "hour", "minute"
+     * @param numberRows    - Number of rows for graph plotting
+     * @param numberColumns - Number of columns for graph plotting
+     * @param selSymbol     - List of loaded symbols
+     * @param forSymbolName - Selected symbol
+     */
     public void jsonParse(final int numberOfData, String timeFrame, int numberRows, int numberColumns, List<String> selSymbol, String forSymbolName) throws JSONException {
         // timeFrame = "day" for dayly graph
         // timeFrame = "hour" for hourly graph
@@ -331,13 +342,12 @@ public class LineView extends View {
         numRows = numberRows;
         numColumns = numberColumns;
         calculateDimensions();
+        setTempSelectedSymbols(selectedSymbols);
         points.clear();
-        int i = 0;
-        for ( i = 0; i < selectedSymbols.size(); i++) {
-            currentSymbol = selectedSymbols.get(i);
+        for ( int i = 0; i < selectedSymbols.size(); i++) {
             // Preparing URL address.
             String url = "https://min-api.cryptocompare.com/data/v2/histo" + sharedTimeFrame +
-                    "?fsym=" + symbolName  + "&tsym=" + currentSymbol + "&limit=" + numberOfData;
+                    "?fsym=" + symbolName  + "&tsym=" + selectedSymbols.get(i) + "&limit=" + numberOfData;
 
             // Json request for obtain parameters for graph view.
             JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
@@ -353,11 +363,12 @@ public class LineView extends View {
                                     points.add(dot);
                                     if(points.size() <= numberOfData + 1)      // Only once reading.
                                         timeAxis[j] = Integer.valueOf(objectData.getString("time"));
-                                    db.insertGraphLine(symbolName, currentSymbol, dot.x, dot.y, timeAxis[j], sharedTimeFrame, numRows, numColumns);
+                                    db.insertGraphLine(symbolName, tempSelectedSymbols.get(0), dot.x, dot.y, timeAxis[j], sharedTimeFrame, numRows, numColumns);
                                 }
                                 // If all data is loaded.
                                 if( points.size() == selectedSymbols.size() * (numberOfData + 1))
                                     invalidate();
+                                tempSelectedSymbols.remove(0);
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
@@ -371,10 +382,15 @@ public class LineView extends View {
                     });
             mQueue.add(request);
         }
-        //invalidate();
     }
 
-    // Transforming the Month string from "MM" (where M is number) to short text strings.
+
+    /**
+     * Transforming the Month string from "MM" (where M is number) to short text strings.
+     *
+     * @param month - Month in number format
+     * @return      - String as short text name of Month
+     */
     private String getMonthTextFromNum(String month){
         switch (month){
             case "01":
@@ -407,7 +423,12 @@ public class LineView extends View {
         return month;
     }
 
-    // Timestamp convert function for month.
+    /**
+     * Timestamp convert function for month.
+     *
+     * @param time - Time in seconds
+     * @return     - String, return Month as two digits
+     */
     private String getMonth(long time) {
         Calendar cal = Calendar.getInstance(Locale.FRANCE);
         cal.setTimeInMillis(time * 1000);
@@ -415,13 +436,24 @@ public class LineView extends View {
         return getMonthTextFromNum(month);
     }
 
-    // Timestamp convert function for day.
+    /**
+     * Timestamp convert function for day.
+     *
+     * @param time - Time in seconds
+     * @return     - String, return Day as two digits
+     */
     private String getDay(long time) {
         Calendar cal = Calendar.getInstance(Locale.FRANCE);
         cal.setTimeInMillis(time * 1000);
         return DateFormat.format("dd", cal).toString();
     }
 
+    /**
+     * Timestamp convert function for am/pm.
+     *
+     * @param time - Time in seconds
+     * @return     - String, return am/pm
+     */
     // Timestamp convert function for am/pm.
     private String getAmPm(long time) {
         Calendar cal = Calendar.getInstance(Locale.FRANCE);
@@ -429,18 +461,38 @@ public class LineView extends View {
         return DateFormat.format("a", cal).toString();
     }
 
-    // Timestamp convert function for hour.
+    /**
+     * Timestamp convert function for hour.
+     *
+     * @param time - Time in seconds
+     * @return     - String, return hour as two digits
+     */
     private String getHour(long time) {
         Calendar cal = Calendar.getInstance(Locale.FRANCE);
         cal.setTimeInMillis(time * 1000);
         return DateFormat.format("hh", cal).toString();
     }
 
-    // Timestamp convert function for minute.
+    /**
+     * Timestamp convert function for minute.
+     *
+     * @param time - Time in seconds
+     * @return     - String, return minute as two digits
+     */
     private String getMinute(long time) {
         Calendar cal = Calendar.getInstance(Locale.FRANCE);
         cal.setTimeInMillis(time * 1000);
         return DateFormat.format("mm", cal).toString();
+    }
+
+    /**
+     * Generate a list of loaded Cryptocurrencies.
+     *
+     * @param symbols - Symbol list of loaded Cryptocurrencies
+     */
+    private void setTempSelectedSymbols (List<String> symbols) {
+        for(int i = 0; i < symbols.size(); i++)
+            tempSelectedSymbols.add(symbols.get(i));
     }
 
 }

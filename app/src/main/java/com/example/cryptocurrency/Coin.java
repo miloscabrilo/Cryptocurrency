@@ -1,3 +1,7 @@
+/**
+ * Class Coin: consists of 3 parameters, name, symbol and image.
+ */
+
 package com.example.cryptocurrency;
 
 public class Coin {
