@@ -23,16 +23,13 @@ package com.example.cryptocurrency;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.TextView;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.android.volley.Request;
@@ -45,7 +42,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.ByteArrayOutputStream;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,13 +52,15 @@ public class MainActivity extends AppCompatActivity {
     private static final String ARG_IMAGE_FROM_MAIN = "image_coin";
     private static final String ARG_SYMBOL_FROM_MAIN = "symbol_coin";
     private static final String ARG_LIST_SYMBOL = "list_symbol";
-    private static final String ARG_INTERNET_ACCESS = "internet_access";
+
+    private static final String CRYPTOCOMPARE_URL = "https://www.cryptocompare.com";
+    private static final String API_CRYPTOCOMPARE_URL = "https://min-api.cryptocompare.com/data/top/totaltoptiervolfull?tsym=USD&limit=";
     private List<String> listSymbol;
     private ListView listView;
     private CoinArrayAdapter coinArrayAdapter;
-    private RequestQueue mQueue;
-    private int numberDataPerPages;
-    private CryptocurrencyDatabase db;
+    public static RequestQueue mQueue;
+    public static DatabaseHandler db;
+    private final int numberDataPerPages = 20;   // number of Cryptocurrencies returned
 
 
     // Main Activity create
@@ -73,21 +71,20 @@ public class MainActivity extends AppCompatActivity {
 
         // Initialization parameters.
         mQueue = Volley.newRequestQueue(this);
+        db = new DatabaseHandler(this);
+
         listView = (ListView) findViewById(R.id.listView);
-        numberDataPerPages = 20;    // number of Cryptocurrencies returned
         coinArrayAdapter = new CoinArrayAdapter(getApplicationContext(), R.layout.list_of_coins);
         listView.setAdapter(coinArrayAdapter);
         listView.setFocusable(false);
         listSymbol = new ArrayList<>();
         listSymbol.add("Select");
-        db = new CryptocurrencyDatabase(this);
-        coinArrayAdapter.setInternetAccess(isNetworkConnected());
 
 
         // If users don't have an internet access, data from the Database is loaded. In the second
         // case, the old data from the Database will be wiped out and refreshed with a new one.
         if(!isNetworkConnected()) {
-            Cursor res = db.readCoins();
+            Cursor res = db.readCoinsFromDB();
             while(res.moveToNext()) {
                 Coin coin = new Coin( res.getString(2), res.getString(0), res.getString(1));
                 listSymbol.add(res.getString(1));
@@ -95,29 +92,26 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         else {
+            // If network is connected, delete all previous tables and create new ones according to the activities in the app.
             db.deleteAllTables();
-            // Use jsonParse method to get Cryptocurrencies.
+            // Use readCryptocurrencies method to get Cryptocurrencies.
             if (coinArrayAdapter.getCount() == 0) {
                 try {
-                    jsonParse(coinArrayAdapter.getCount());
+                    readCryptocurrenciesFromUrl(coinArrayAdapter.getCount());
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
         }
 
-
         // OnClick Listener. Opens a new layout with general information about the Cryptocurrency clicked.
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(MainActivity.this, CoinDetailsTab.class);
-                TextView nameView = (TextView) view.findViewById(R.id.coinName);
-                TextView symbolView = (TextView) view.findViewById(R.id.coinSymbol);
-                intent.putExtra(ARG_NAME_FROM_MAIN, nameView.getText());
-                intent.putExtra(ARG_SYMBOL_FROM_MAIN, symbolView.getText());
+                Intent intent = new Intent(MainActivity.this, TabMenuForSelectedCoin.class);
+                intent.putExtra(ARG_NAME_FROM_MAIN, coinArrayAdapter.getItem(position).getNameCoin());
+                intent.putExtra(ARG_SYMBOL_FROM_MAIN, coinArrayAdapter.getItem(position).getSymbolCoin());
                 intent.putExtra(ARG_IMAGE_FROM_MAIN, coinArrayAdapter.getItem(position).getImageCoin());
-                intent.putExtra(ARG_INTERNET_ACCESS, isNetworkConnected());
                 intent.putStringArrayListExtra(ARG_LIST_SYMBOL, (ArrayList<String>)listSymbol);
                 startActivity(intent);
             }
@@ -139,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
                     if (firstVisibleItem != firstItem) {
                         firstItem = firstVisibleItem;
                         try {
-                            jsonParse(coinArrayAdapter.getCount());
+                            readCryptocurrenciesFromUrl(coinArrayAdapter.getCount());
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -154,11 +148,9 @@ public class MainActivity extends AppCompatActivity {
      *
      * @param countCoins    - Number of shown elements
      */
-    private void jsonParse(int countCoins) throws JSONException {
-        int urlPage = countCoins / numberDataPerPages;
-        // https://min-api.cryptocompare.com/data/top/totaltoptiervolfull?tsym=USD&limit=12&page=0
-        String url = "https://min-api.cryptocompare.com/data/top/totaltoptiervolfull?tsym=USD";
-        url = url + "&limit=" + numberDataPerPages + "&page=" + urlPage;
+    private void readCryptocurrenciesFromUrl(int countCoins) throws JSONException {
+        // Read data from URL
+        String url = API_CRYPTOCOMPARE_URL + numberDataPerPages + "&page=" + countCoins / numberDataPerPages;
 
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, new com.android.volley.Response.Listener<JSONObject>() {
             @Override
@@ -171,13 +163,13 @@ public class MainActivity extends AppCompatActivity {
                         JSONObject coinInfo = objectData.getJSONObject("CoinInfo");
                         String symbol = coinInfo.getString("Name");
                         String coinName = coinInfo.getString("FullName");
-                        String imageUrl = "https://www.cryptocompare.com"+ coinInfo.getString("ImageUrl");
+                        String imageUrl = CRYPTOCOMPARE_URL + coinInfo.getString("ImageUrl");
                         Coin coin = new Coin(imageUrl, coinName, symbol);
                         coinArrayAdapter.add(coin);
                         listSymbol.add(symbol);
 
                         // Insert loaded Coin into database
-                        db.insertCoin(coinName, symbol, imageUrl);
+                        db.writeCoinIntoDB(coin);
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();

@@ -1,5 +1,5 @@
 /**
- * Database class CryptocurrencyDatabase which is extended from SQLiteOpenHelper.
+ * Database class DatabaseHandler which is extended from SQLiteOpenHelper.
  * This class is used to create Database, and 3 Tables. Users can read and write from tables.
  */
 
@@ -12,15 +12,14 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-public class CryptocurrencyDatabase extends SQLiteOpenHelper {
+public class DatabaseHandler extends SQLiteOpenHelper {
 
     // Database name
     private static final String DATABASE_NAME = "Cryptocurrency.db";
     // Tables name
     private static final String TABLE_COINS = "Cryptocurrency_table";
-    private static final String TABLE_SELECTED_COIN = "Selected_coin";
-    private static final String TABLE_GRAPH_LINE = "Graph_line";
-
+    private static final String TABLE_SELECTED_COIN = "Selected_coins";
+    private static final String TABLE_GRAPH_LINE = "Graph_lines";
 
     // Fields for table TABLE_COINS
     private static final String NAME = "name";
@@ -42,12 +41,8 @@ public class CryptocurrencyDatabase extends SQLiteOpenHelper {
     private static final String NUM_ROWS = "num_rows";
     private static final String NUM_COLUMNS = "num_columns";
 
-    public CryptocurrencyDatabase(Context context) {
+    public DatabaseHandler(Context context) {
         super(context, DATABASE_NAME, null, 1);
-    }
-
-    public CryptocurrencyDatabase(Context context, String name,SQLiteDatabase.CursorFactory factory, int version) {
-        super(context, name, factory, version);
     }
 
     @Override
@@ -67,21 +62,20 @@ public class CryptocurrencyDatabase extends SQLiteOpenHelper {
         onCreate(db);
     }
 
+    //////////////////////      WRITE METHODS        ///////////////////////
     /**
      * Insert single Coin into table Cryptocurrency_table. Result - boolean. For successful
      * database entry, the function returns true, in the opposite returns false.
      *
-     * @param name      - Cryptocurrency name
-     * @param symbol    - Cryptocurrency symbol
-     * @param image     - Cryptocurrency image
+     * @param coin      - Cryptocurrency
      * @return boolean  - True for successful database entry, in the opposite false
      */
-    public boolean insertCoin(String name, String symbol, String image) {
+    public boolean writeCoinIntoDB(Coin coin) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
-        contentValues.put(NAME, name);
-        contentValues.put(SYMBOL, symbol);
-        contentValues.put(IMAGE, image);
+        contentValues.put(NAME, coin.getNameCoin());
+        contentValues.put(SYMBOL, coin.getSymbolCoin());
+        contentValues.put(IMAGE, coin.getImageCoin());
         long result = db.insert(TABLE_COINS, null, contentValues);
         if(result == -1)
             return false;
@@ -98,7 +92,7 @@ public class CryptocurrencyDatabase extends SQLiteOpenHelper {
      * @param textCompValue - Comparison values for selected Cryptocurrency
      * @return boolean      - True for successful database entry, in the opposite false
      */
-    public boolean insertGenInfo(String symbol, String textGenInfo, String textCompValue) {
+    public boolean writeGeneralInfoIntoDB(String symbol, String textGenInfo, String textCompValue) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(SYM, symbol);
@@ -125,7 +119,7 @@ public class CryptocurrencyDatabase extends SQLiteOpenHelper {
      * @param numColumns    - Number of columns for graph plotting
      * @return boolean      - True for successful database entry, in the opposite false
      */
-    public boolean insertGraphLine(String symbolFrom, String symbolTo, float pointX, float pointY, int time, String timeFrame, int numRows, int numColumns) {
+    public boolean writeGraphLineIntoDB(String symbolFrom, String symbolTo, float pointX, float pointY, int time, String timeFrame, int numRows, int numColumns) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(SYM_FROM, symbolFrom);
@@ -143,22 +137,37 @@ public class CryptocurrencyDatabase extends SQLiteOpenHelper {
             return true;
     }
 
+    //////////////////////      READ METHODS        ///////////////////////
+
     // Getting all data from table Cryptocurrency_table.
-    public Cursor readCoins(){
+    public Cursor readCoinsFromDB(){
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor res = db.rawQuery("SELECT * FROM " + TABLE_COINS, null);
         return res;
     }
 
     // Getting all data from table Selected_coin.
-    public Cursor readSelectedCoin(){
+    public Cursor readGeneralInfoFromDB(){
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor res = db.rawQuery("SELECT * FROM " + TABLE_SELECTED_COIN, null);
         return res;
     }
 
+    /**
+     * Read Graph line from table Graph_line. Result - Cursor.
+     *
+     * @param symbolFrom    - Symbol of selected Cryptocurrency
+     * @param timeFrame     - Time frame, e.g. "day", "hour", "minute"
+     * @return Cursor       - Result is found from query
+     */
+    public Cursor readGraphLineFromDB(String symbolFrom, String timeFrame) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor res = db.rawQuery("SELECT * FROM " + TABLE_GRAPH_LINE + " WHERE " + SYM_FROM + " = '" + symbolFrom +
+                "' AND " + TIME_FRAME + " = '" + timeFrame + "'", null);
+        return res;
+    }
 
-    public Cursor readSelectedCoin(String symbol){
+    public Cursor readSelectedCoinFromDatabase(String symbol){
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor res = db.rawQuery("SELECT * FROM " + TABLE_SELECTED_COIN + " WHERE " + SYM_FROM + " = '" + symbol +
                 "'", null);
@@ -171,19 +180,7 @@ public class CryptocurrencyDatabase extends SQLiteOpenHelper {
         return res;
     }
 
-    /**
-     * Read Graph line from table Graph_line. Result - Cursor.
-     *
-     * @param symbolFrom    - Symbol of selected Cryptocurrency
-     * @param timeFrame     - Time frame, e.g. "day", "hour", "minute"
-     * @return Cursor       - Result is found from query
-     */
-    public Cursor readGraphLine(String symbolFrom, String timeFrame) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        Cursor res = db.rawQuery("SELECT * FROM " + TABLE_GRAPH_LINE + " WHERE " + SYM_FROM + " = '" + symbolFrom +
-                "' AND " + TIME_FRAME + " = '" + timeFrame + "'", null);
-        return res;
-    }
+
 
     /**
      * Delete Graph line from table Graph_line for the parameters used.

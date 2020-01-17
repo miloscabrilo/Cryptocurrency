@@ -31,7 +31,7 @@
 18        android:allowBackup="true"
 18-->C:\Users\MilosCabrilo\AndroidStudioProjects\Cryptocurrency\app\src\main\AndroidManifest.xml:12:9-35
 19        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
-19-->[androidx.core:core:1.0.1] C:\Users\MilosCabrilo\.gradle\caches\transforms-2\files-2.1\46da25c3e2ae6308b2227b660caa604d\core-1.0.1\AndroidManifest.xml:22:18-86
+19-->[androidx.core:core:1.0.1] C:\Users\MilosCabrilo\.gradle\caches\transforms-2\files-2.1\c0a39027978b83a483a047f5c31d0c4e\core-1.0.1\AndroidManifest.xml:22:18-86
 20        android:debuggable="true"
 21        android:icon="@mipmap/ic_launcher"
 21-->C:\Users\MilosCabrilo\AndroidStudioProjects\Cryptocurrency\app\src\main\AndroidManifest.xml:13:9-43
@@ -46,8 +46,8 @@
 26-->C:\Users\MilosCabrilo\AndroidStudioProjects\Cryptocurrency\app\src\main\AndroidManifest.xml:17:9-40
 27        <activity
 27-->C:\Users\MilosCabrilo\AndroidStudioProjects\Cryptocurrency\app\src\main\AndroidManifest.xml:18:9-21:68
-28            android:name="com.example.cryptocurrency.CoinDetailsTab"
-28-->C:\Users\MilosCabrilo\AndroidStudioProjects\Cryptocurrency\app\src\main\AndroidManifest.xml:19:13-43
+28            android:name="com.example.cryptocurrency.TabMenuForSelectedCoin"
+28-->C:\Users\MilosCabrilo\AndroidStudioProjects\Cryptocurrency\app\src\main\AndroidManifest.xml:19:13-51
 29            android:label="@string/title_activity_coin_details_tab"
 29-->C:\Users\MilosCabrilo\AndroidStudioProjects\Cryptocurrency\app\src\main\AndroidManifest.xml:20:13-68
 30            android:theme="@style/AppTheme.NoActionBar" />
@@ -75,23 +75,23 @@
 41-->C:\Users\MilosCabrilo\AndroidStudioProjects\Cryptocurrency\app\src\main\AndroidManifest.xml:31:13-93
 42
 43        <provider
-43-->[com.squareup.picasso:picasso:2.71828] C:\Users\MilosCabrilo\.gradle\caches\transforms-2\files-2.1\635f8712e97e843636dfa07d9b9246e0\jetified-picasso-2.71828\AndroidManifest.xml:8:9-11:40
+43-->[com.squareup.picasso:picasso:2.71828] C:\Users\MilosCabrilo\.gradle\caches\transforms-2\files-2.1\ce04832f41be514a5ecfd5f055239a16\jetified-picasso-2.71828\AndroidManifest.xml:8:9-11:40
 44            android:name="com.squareup.picasso.PicassoProvider"
-44-->[com.squareup.picasso:picasso:2.71828] C:\Users\MilosCabrilo\.gradle\caches\transforms-2\files-2.1\635f8712e97e843636dfa07d9b9246e0\jetified-picasso-2.71828\AndroidManifest.xml:9:13-64
+44-->[com.squareup.picasso:picasso:2.71828] C:\Users\MilosCabrilo\.gradle\caches\transforms-2\files-2.1\ce04832f41be514a5ecfd5f055239a16\jetified-picasso-2.71828\AndroidManifest.xml:9:13-64
 45            android:authorities="com.example.cryptocurrency.com.squareup.picasso"
-45-->[com.squareup.picasso:picasso:2.71828] C:\Users\MilosCabrilo\.gradle\caches\transforms-2\files-2.1\635f8712e97e843636dfa07d9b9246e0\jetified-picasso-2.71828\AndroidManifest.xml:10:13-72
+45-->[com.squareup.picasso:picasso:2.71828] C:\Users\MilosCabrilo\.gradle\caches\transforms-2\files-2.1\ce04832f41be514a5ecfd5f055239a16\jetified-picasso-2.71828\AndroidManifest.xml:10:13-72
 46            android:exported="false" />
-46-->[com.squareup.picasso:picasso:2.71828] C:\Users\MilosCabrilo\.gradle\caches\transforms-2\files-2.1\635f8712e97e843636dfa07d9b9246e0\jetified-picasso-2.71828\AndroidManifest.xml:11:13-37
+46-->[com.squareup.picasso:picasso:2.71828] C:\Users\MilosCabrilo\.gradle\caches\transforms-2\files-2.1\ce04832f41be514a5ecfd5f055239a16\jetified-picasso-2.71828\AndroidManifest.xml:11:13-37
 47        <provider
-47-->[androidx.lifecycle:lifecycle-process:2.0.0] C:\Users\MilosCabrilo\.gradle\caches\transforms-2\files-2.1\7309f8169174f11110ad56440ca8f929\lifecycle-process-2.0.0\AndroidManifest.xml:23:9-27:43
+47-->[androidx.lifecycle:lifecycle-process:2.0.0] C:\Users\MilosCabrilo\.gradle\caches\transforms-2\files-2.1\b3c088406576b03c69a90621925ddf75\lifecycle-process-2.0.0\AndroidManifest.xml:23:9-27:43
 48            android:name="androidx.lifecycle.ProcessLifecycleOwnerInitializer"
-48-->[androidx.lifecycle:lifecycle-process:2.0.0] C:\Users\MilosCabrilo\.gradle\caches\transforms-2\files-2.1\7309f8169174f11110ad56440ca8f929\lifecycle-process-2.0.0\AndroidManifest.xml:24:13-79
+48-->[androidx.lifecycle:lifecycle-process:2.0.0] C:\Users\MilosCabrilo\.gradle\caches\transforms-2\files-2.1\b3c088406576b03c69a90621925ddf75\lifecycle-process-2.0.0\AndroidManifest.xml:24:13-79
 49            android:authorities="com.example.cryptocurrency.lifecycle-process"
-49-->[androidx.lifecycle:lifecycle-process:2.0.0] C:\Users\MilosCabrilo\.gradle\caches\transforms-2\files-2.1\7309f8169174f11110ad56440ca8f929\lifecycle-process-2.0.0\AndroidManifest.xml:25:13-69
+49-->[androidx.lifecycle:lifecycle-process:2.0.0] C:\Users\MilosCabrilo\.gradle\caches\transforms-2\files-2.1\b3c088406576b03c69a90621925ddf75\lifecycle-process-2.0.0\AndroidManifest.xml:25:13-69
 50            android:exported="false"
-50-->[androidx.lifecycle:lifecycle-process:2.0.0] C:\Users\MilosCabrilo\.gradle\caches\transforms-2\files-2.1\7309f8169174f11110ad56440ca8f929\lifecycle-process-2.0.0\AndroidManifest.xml:26:13-37
+50-->[androidx.lifecycle:lifecycle-process:2.0.0] C:\Users\MilosCabrilo\.gradle\caches\transforms-2\files-2.1\b3c088406576b03c69a90621925ddf75\lifecycle-process-2.0.0\AndroidManifest.xml:26:13-37
 51            android:multiprocess="true" />
-51-->[androidx.lifecycle:lifecycle-process:2.0.0] C:\Users\MilosCabrilo\.gradle\caches\transforms-2\files-2.1\7309f8169174f11110ad56440ca8f929\lifecycle-process-2.0.0\AndroidManifest.xml:27:13-40
+51-->[androidx.lifecycle:lifecycle-process:2.0.0] C:\Users\MilosCabrilo\.gradle\caches\transforms-2\files-2.1\b3c088406576b03c69a90621925ddf75\lifecycle-process-2.0.0\AndroidManifest.xml:27:13-40
 52    </application>
 53
 54</manifest>

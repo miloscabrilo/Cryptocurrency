@@ -14,12 +14,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 // Fragment pager Adapter
-public class ViewPagerAdapter extends FragmentPagerAdapter {
+public class FragmentPagerAdapterCustom extends FragmentPagerAdapter {
 
     private List<Fragment> fragmentList = new ArrayList<>();
     private List<String> fragmentListTitle = new ArrayList<>();
 
-    public ViewPagerAdapter(FragmentManager fm) {
+    public FragmentPagerAdapterCustom(FragmentManager fm) {
         super(fm);
     }
 

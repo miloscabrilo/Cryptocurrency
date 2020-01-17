@@ -24,7 +24,6 @@ import java.util.ArrayList;
 public class CoinArrayAdapter extends ArrayAdapter<Coin> {
     private List<Coin> coinList= new ArrayList<>();
     private Context mContext;
-    private boolean internetAccess;
 
     static class CoinViewHolder {
         ImageView imageCoin;
@@ -35,10 +34,6 @@ public class CoinArrayAdapter extends ArrayAdapter<Coin> {
     public CoinArrayAdapter(Context context, int textViewResourceId) {
         super(context, textViewResourceId);
         this.mContext = context;
-    }
-
-    public void setInternetAccess(Boolean isInternetAccess) {
-        internetAccess = isInternetAccess;
     }
 
     @Override
@@ -77,11 +72,11 @@ public class CoinArrayAdapter extends ArrayAdapter<Coin> {
         String imageUrl = coin.getImageCoin();
 
 
-        if(internetAccess)
+        //if(internetAccess)
             Picasso.get().load(imageUrl).resize(120,120).into(viewHolder.imageCoin);
-        else {
-            Picasso.get().load(imageUrl).networkPolicy(NetworkPolicy.OFFLINE).resize(120,120).into(viewHolder.imageCoin);
-        }
+        //else {
+            //Picasso.get().load(imageUrl).networkPolicy(NetworkPolicy.OFFLINE).resize(120,120).into(viewHolder.imageCoin);
+        //}
         viewHolder.nameCoin.setText(coin.getNameCoin());
         viewHolder.symbolCoin.setText(coin.getSymbolCoin());
         return row;

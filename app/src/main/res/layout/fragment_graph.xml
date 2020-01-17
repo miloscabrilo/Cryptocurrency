@@ -106,8 +106,8 @@
                         android:text="1M" />
                 </LinearLayout>
 
-                <com.example.cryptocurrency.LineView
-                    android:id="@+id/lineView"
+                <com.example.cryptocurrency.GraphView
+                    android:id="@+id/graphView"
                     android:layout_width="match_parent"
                     android:layout_centerInParent="true"
                     android:layout_height="350dp"
@@ -117,7 +117,7 @@
                     android:id="@+id/line1"
                     android:layout_width="match_parent"
                     android:layout_height="2dp"
-                    android:layout_below="@+id/lineView"
+                    android:layout_below="@+id/graphView"
                     android:background="#c0c0c0"/>
 
                 <LinearLayout
@@ -149,8 +149,8 @@
                         android:text="1W" />
                 </LinearLayout>
 
-                <com.example.cryptocurrency.LineView
-                    android:id="@+id/lineView2"
+                <com.example.cryptocurrency.GraphView
+                    android:id="@+id/graphView2"
                     android:layout_width="match_parent"
                     android:layout_centerInParent="true"
                     android:layout_height="350dp"
@@ -159,7 +159,7 @@
                     android:id="@+id/line2"
                     android:layout_width="match_parent"
                     android:layout_height="2dp"
-                    android:layout_below="@+id/lineView2"
+                    android:layout_below="@+id/graphView2"
                     android:background="#c0c0c0"/>
 
                 <LinearLayout
@@ -191,8 +191,8 @@
                         android:text="1D" />
                 </LinearLayout>
 
-                <com.example.cryptocurrency.LineView
-                    android:id="@+id/lineView3"
+                <com.example.cryptocurrency.GraphView
+                    android:id="@+id/graphView3"
                     android:layout_width="match_parent"
                     android:layout_centerInParent="true"
                     android:layout_height="350dp"

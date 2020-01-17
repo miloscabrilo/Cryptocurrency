@@ -26,7 +26,7 @@
         android:testOnly="true"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="com.example.cryptocurrency.CoinDetailsTab"
+            android:name="com.example.cryptocurrency.TabMenuForSelectedCoin"
             android:label="@string/title_activity_coin_details_tab"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name="com.example.cryptocurrency.MainActivity" >

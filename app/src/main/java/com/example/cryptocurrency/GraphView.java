@@ -16,11 +16,9 @@ import android.view.View;
 import androidx.annotation.Nullable;
 
 import com.android.volley.Request;
-import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -33,7 +31,7 @@ import java.util.Locale;
 import java.util.Random;
 
 
-public class LineView extends View {
+public class GraphView extends View {
     private Paint lineChart = new Paint();
     private float yMin, yMax;
     private List<PointF> points = new ArrayList<>();
@@ -53,23 +51,21 @@ public class LineView extends View {
     private Paint blackPaint;
     private Paint textAxisPaint;
     private Paint textTitlePaint;
-    private RequestQueue mQueue = Volley.newRequestQueue(this.getContext());
     private int[] timeAxis;
     private int yPrecision;
     private int textAxisSize = 20;          // Text size of axis
-    private CryptocurrencyDatabase db = new CryptocurrencyDatabase(this.getContext());
 
 
-    public LineView(Context context) {
+    public GraphView(Context context) {
         super(context);
     }
 
 
-    public LineView(Context context, @Nullable AttributeSet attrs) {
+    public GraphView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public LineView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public GraphView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
 
@@ -93,9 +89,9 @@ public class LineView extends View {
         textTitlePaint.setFakeBoldText(true);
         textTitlePaint.setTextAlign(Paint.Align.CENTER);
         textAxisPaint.setTextSize(textAxisSize);
-        // Calling jsonParse method to plotting initial graphs.
+        // Calling readGraphPointsFromUrl method to plotting initial graphs.
         try {
-            jsonParse(numberOfData, timeFrame, numberRows, numberColumns, selSymbol, forSymbolName);
+            readGraphPointsFromUrl(numberOfData, timeFrame, numberRows, numberColumns, selSymbol, forSymbolName);
         }
         catch (JSONException e){
             e.printStackTrace();
@@ -317,9 +313,6 @@ public class LineView extends View {
         cellHeight = ((super.getHeight() - paddingOffset * 2) / numRows);
     }
 
-    public void setSymbolName(String name) {
-        symbolName = name;
-    }
 
     /**
      * JSON deserialize method for given parameters. Read data from URL.
@@ -331,10 +324,8 @@ public class LineView extends View {
      * @param selSymbol     - List of loaded symbols
      * @param forSymbolName - Selected symbol
      */
-    public void jsonParse(final int numberOfData, String timeFrame, int numberRows, int numberColumns, List<String> selSymbol, String forSymbolName) throws JSONException {
-        // timeFrame = "day" for dayly graph
-        // timeFrame = "hour" for hourly graph
-        // timeFrame = "minute" for minute graph
+    public void readGraphPointsFromUrl(final int numberOfData, String timeFrame, int numberRows, int numberColumns, List<String> selSymbol, String forSymbolName) throws JSONException {
+
         sharedTimeFrame = timeFrame;
         timeAxis = new int[numberOfData + 1];
         symbolName = forSymbolName;
@@ -363,7 +354,7 @@ public class LineView extends View {
                                     points.add(dot);
                                     if(points.size() <= numberOfData + 1)      // Only once reading.
                                         timeAxis[j] = Integer.valueOf(objectData.getString("time"));
-                                    db.insertGraphLine(symbolName, tempSelectedSymbols.get(0), dot.x, dot.y, timeAxis[j], sharedTimeFrame, numRows, numColumns);
+                                    MainActivity.db.writeGraphLineIntoDB(symbolName, tempSelectedSymbols.get(0), dot.x, dot.y, timeAxis[j], sharedTimeFrame, numRows, numColumns);
                                 }
                                 // If all data is loaded.
                                 if( points.size() == selectedSymbols.size() * (numberOfData + 1))
@@ -380,7 +371,7 @@ public class LineView extends View {
                             error.printStackTrace();
                         }
                     });
-            mQueue.add(request);
+            MainActivity.mQueue.add(request);
         }
     }
 
@@ -417,8 +408,6 @@ public class LineView extends View {
                 month = "Nov"; break;
             case "12":
                 month = "Dec"; break;
-            default:
-                month = "Jan"; break;
         }
         return month;
     }

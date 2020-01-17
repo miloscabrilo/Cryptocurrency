@@ -1,5 +1,7 @@
 /**
- * Class for implemented Tab Menu.
+ * Class for implemented a Tab Menu. The Tab Menu consists of two fragments. The first fragment
+ * showing the basic details about selected Coin and a comparison with certain Coins. The second
+ * fragment showing graphs with changes in the value of Coins by minutes, hours and days.
  */
 
 package com.example.cryptocurrency;
@@ -17,13 +19,12 @@ import com.squareup.picasso.Picasso;
 import java.util.List;
 
 
-public class CoinDetailsTab extends AppCompatActivity {
+public class TabMenuForSelectedCoin extends AppCompatActivity {
     private TextView coinName, coinSymbol;
     private ImageView coinImage;
     private ViewPager viewPager;
     private TabLayout tabLayout;
     private List<String> listSymbol;
-    private boolean internetAccess;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,7 +36,6 @@ public class CoinDetailsTab extends AppCompatActivity {
         String passedArgSymbol = getIntent().getExtras().getString("symbol_coin");
         String passedArgImage = getIntent().getExtras().getString("image_coin");
         listSymbol = getIntent().getStringArrayListExtra("list_symbol");
-        internetAccess = getIntent().getExtras().getBoolean("internet_access");
 
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         viewPager = (ViewPager) findViewById(R.id.view_pager);
@@ -47,9 +47,10 @@ public class CoinDetailsTab extends AppCompatActivity {
         coinSymbol.setText(passedArgSymbol);
         Picasso.get().load(passedArgImage).resize(70, 70).into(coinImage);
 
-        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        adapter.AddFragment(new FragmentGeneralInfo(passedArgSymbol, internetAccess), "General info");
-        adapter.AddFragment(new FragmentGraph(passedArgSymbol, listSymbol, internetAccess), "Graph view");
+        FragmentPagerAdapterCustom adapter = new FragmentPagerAdapterCustom(getSupportFragmentManager());
+        adapter.AddFragment(new FragmentGeneralInfo(passedArgSymbol), "General info");
+        adapter.AddFragment(new FragmentGraph(passedArgSymbol, listSymbol), "Graph view");
+
 
         viewPager.setAdapter(adapter);
         viewPager.setOffscreenPageLimit(2);

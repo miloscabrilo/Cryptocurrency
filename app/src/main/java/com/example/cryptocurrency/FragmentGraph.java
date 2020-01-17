@@ -4,10 +4,12 @@
 
 package com.example.cryptocurrency;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.PointF;
 import android.graphics.Typeface;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -32,31 +34,27 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
 
     private View view;
     private TextView addCompare, deleteCompare;
-    private LineView lineView, lineView2, lineView3;
+    private GraphView graphView, graphView2, graphView3;
     private Button first1D, first1W, first2W, first1M;
     private Button second1D, second3D, second1W;
     private Button third1H, third3H, third1D;
     private Spinner addSpinner, deleteSpinner;
     private String symbolName;
-    private List<String> listSymbol;
-    private List<String> listOfSelectedSymbol;
+    private List<String> listOfAllAvailableSymbols;
+    private List<String> listOfAddedSymbolsOnGraph;
     private List<PointF> pointsList = new ArrayList<>();
     private List<PointF> pointsList2 = new ArrayList<>();
     private List<PointF> pointsList3 = new ArrayList<>();
     private int[] timeAxis;
-    private boolean internetAccess;
-    private CryptocurrencyDatabase db;
-
 
     public FragmentGraph() {
     }
 
-    public FragmentGraph(String symbol, List<String> symbols, boolean internetAccess) {
+
+    public FragmentGraph(String symbol, List<String> symbols) {
         symbolName = symbol;
-        listSymbol = symbols;
-        listSymbol.remove(symbolName);
-        listSymbol.remove("BTC");
-        this.internetAccess = internetAccess;
+        listOfAllAvailableSymbols = symbols;
+        listOfAllAvailableSymbols.remove(symbolName);
     }
 
     @Override
@@ -76,9 +74,9 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
 
         // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_graph, container, false);
-        lineView = (LineView) view.findViewById(R.id.lineView);
-        lineView2 = (LineView) view.findViewById(R.id.lineView2);
-        lineView3 = (LineView) view.findViewById(R.id.lineView3);
+        graphView = (GraphView) view.findViewById(R.id.graphView);
+        graphView2 = (GraphView) view.findViewById(R.id.graphView2);
+        graphView3 = (GraphView) view.findViewById(R.id.graphView3);
         first1D = (Button) view.findViewById(R.id.first1D);
         first1W = (Button) view.findViewById(R.id.first1W);
         first2W = (Button) view.findViewById(R.id.first2W);
@@ -106,8 +104,6 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
         third3H.setOnClickListener(this);
         third1D.setOnClickListener(this);
 
-        db = new CryptocurrencyDatabase(getContext());
-
         // The ability to select a symbol to display as a multiple comparison on the same graph.
         // Spinner consists of loaded symbols.
         addCompare.setText("Add a comparison to the " + symbolName + ":");
@@ -118,15 +114,17 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
         deleteCompare.setText("Delete shown comparison with " + symbolName + ":");
         deleteCompare.setTypeface(null, Typeface.BOLD);
 
-        listOfSelectedSymbol = new ArrayList<String>();
-        listOfSelectedSymbol.add("Select");
-        if (!symbolName.equals("BTC"))
-            listOfSelectedSymbol.add("BTC");
+        listOfAddedSymbolsOnGraph = new ArrayList<String>();
+        listOfAddedSymbolsOnGraph.add("Select");
+        if (!symbolName.equals("BTC")) {
+            listOfAddedSymbolsOnGraph.add("BTC");
+            listOfAllAvailableSymbols.remove("BTC");
+        }
         else {  // if Selected symbol is BTC. Show comparison with first non BTC coin.
-            for(int i = 0; i < listSymbol.size(); i++)
-                if(!listSymbol.get(i).equals("BTC") && !listSymbol.get(i).equals("Select")) {
-                    listOfSelectedSymbol.add(listSymbol.get(i));
-                    listSymbol.remove(listSymbol.get(i));
+            for(int i = 0; i < listOfAllAvailableSymbols.size(); i++)
+                if(!listOfAllAvailableSymbols.get(i).equals("BTC") && !listOfAllAvailableSymbols.get(i).equals("Select")) {
+                    listOfAddedSymbolsOnGraph.add(listOfAllAvailableSymbols.get(i));
+                    listOfAllAvailableSymbols.remove(listOfAllAvailableSymbols.get(i));
                     break;
                 }
 
@@ -135,12 +133,12 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
         final ArrayAdapter<String> adapterForAdd = new ArrayAdapter<String>(
                 getActivity(),
                 android.R.layout.simple_spinner_item,
-                listSymbol
+                listOfAllAvailableSymbols
         );
         final ArrayAdapter<String> adapterForDelete = new ArrayAdapter<String>(
                 getActivity(),
                 android.R.layout.simple_spinner_item,
-                listOfSelectedSymbol
+                listOfAddedSymbolsOnGraph
         );
         addSpinner.setAdapter(adapterForAdd);
         deleteSpinner.setAdapter(adapterForDelete);
@@ -148,14 +146,14 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
         addSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if(internetAccess) {
+                if(isNetworkConnected()) {
                     if(position != 0) {
-                        listOfSelectedSymbol.add(adapterForAdd.getItem(position));
+                        listOfAddedSymbolsOnGraph.add(adapterForAdd.getItem(position));
                         adapterForDelete.notifyDataSetChanged();
-                        listSymbol.remove(position);
+                        listOfAllAvailableSymbols.remove(position);
                         adapterForAdd.notifyDataSetChanged();
                         addSpinner.setSelection(0);
-                        db.deleteGraphBySymbol(symbolName);
+                        MainActivity.db.deleteGraphs();
                         initialSetButtonColor();
                         initialDrawing();
                     }
@@ -174,14 +172,14 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
         deleteSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if(internetAccess) {
+                if(isNetworkConnected()) {
                     if(position != 0) {
-                        listSymbol.add(adapterForDelete.getItem(position));
+                        listOfAllAvailableSymbols.add(adapterForDelete.getItem(position));
                         adapterForAdd.notifyDataSetChanged();
-                        listOfSelectedSymbol.remove(position);
+                        listOfAddedSymbolsOnGraph.remove(position);
                         adapterForDelete.notifyDataSetChanged();
                         deleteSpinner.setSelection(0);
-                        db.deleteGraphs();
+                        MainActivity.db.deleteGraphBySymbol(symbolName);
                         initialSetButtonColor();
                         initialDrawing();
                     }
@@ -209,7 +207,7 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
     }
 
     // Parse ArrayList to delete element "Select"
-    public List<String> parseList(List<String> list) {
+    public List<String> deleteFirstElemOfList(List<String> list) {
         List<String> newList = new ArrayList<>();
         if(list.size() > 1) {
             for(int i = 1; i < list.size(); i++)
@@ -220,25 +218,24 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
 
     // InitialDrawing
     public void initialDrawing() {
-        if(internetAccess) {
-            //db.deleteGraphs();
+        if(isNetworkConnected()) {
             // Initial graph plotting. By day compared - for one day.
             try {
-                lineView.draw(1, "day", 2, 1, parseList(listOfSelectedSymbol), symbolName);
+                graphView.draw(1, "day", 2, 1, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), symbolName);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
 
             // Initial graph plotting. By hour compared - for one day.
             try {
-                lineView2.draw(24, "hour", 5, 6, parseList(listOfSelectedSymbol), symbolName);
+                graphView2.draw(24, "hour", 5, 6, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), symbolName);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
 
             // Initial graph plotting. By minute compared - for one hour.
             try {
-                lineView3.draw(60, "minute", 5, 6, parseList(listOfSelectedSymbol), symbolName);
+                graphView3.draw(60, "minute", 5, 6, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), symbolName);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -246,9 +243,9 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
         else {
 
             // Draw Graph lines in case users don't have an internet access.
-            drawGraphsOffline(lineView, "day", pointsList);
-            drawGraphsOffline(lineView2, "hour", pointsList2);
-            drawGraphsOffline(lineView3, "minute", pointsList3);
+            drawGraphsOffline(graphView, "day", pointsList);
+            drawGraphsOffline(graphView2, "hour", pointsList2);
+            drawGraphsOffline(graphView3, "minute", pointsList3);
         }
     }
 
@@ -263,7 +260,7 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
         third3H.setBackgroundColor(Color.WHITE);
         third1D.setBackgroundColor(Color.WHITE);
 
-        if(internetAccess) {
+        if(isNetworkConnected()) {
             // Initial activated Buttons.
             first1D.setBackgroundColor(Color.rgb(0, 157, 111));
             second1D.setBackgroundColor(Color.rgb(0, 157, 111));
@@ -279,12 +276,12 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
     // Redefine onClick method for Buttons.
     @Override
     public void onClick(View v) {
-        if(internetAccess) {
+        if(isNetworkConnected()) {
             switch (v.getId()) {
                 case R.id.first1D:
-                    db.deleteGraphTimeFrame(symbolName, "day");
+                    MainActivity.db.deleteGraphTimeFrame(symbolName, "day");
                     try {
-                        lineView.jsonParse(1, "day", 1, 1, parseList(listOfSelectedSymbol), symbolName);
+                        graphView.readGraphPointsFromUrl(1, "day", 1, 1, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), symbolName);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -294,9 +291,9 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
                     first1D.setBackgroundColor(Color.rgb(0, 157, 111));
                     break;
                 case R.id.first1W:
-                    db.deleteGraphTimeFrame(symbolName, "day");
+                    MainActivity.db.deleteGraphTimeFrame(symbolName, "day");
                     try {
-                        lineView.jsonParse(7, "day", 5, 7, parseList(listOfSelectedSymbol), symbolName);
+                        graphView.readGraphPointsFromUrl(7, "day", 5, 7, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), symbolName);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -306,9 +303,9 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
                     first1W.setBackgroundColor(Color.rgb(0, 157, 111));
                     break;
                 case R.id.first2W:
-                    db.deleteGraphTimeFrame(symbolName, "day");
+                    MainActivity.db.deleteGraphTimeFrame(symbolName, "day");
                     try {
-                        lineView.jsonParse(14, "day", 5, 7, parseList(listOfSelectedSymbol), symbolName);
+                        graphView.readGraphPointsFromUrl(14, "day", 5, 7, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), symbolName);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -318,9 +315,9 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
                     first2W.setBackgroundColor(Color.rgb(0, 157, 111));
                     break;
                 case R.id.first1M:
-                    db.deleteGraphTimeFrame(symbolName, "day");
+                    MainActivity.db.deleteGraphTimeFrame(symbolName, "day");
                     try {
-                        lineView.jsonParse(30, "day", 5, 6, parseList(listOfSelectedSymbol), symbolName);
+                        graphView.readGraphPointsFromUrl(30, "day", 5, 6, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), symbolName);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -330,9 +327,9 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
                     first1M.setBackgroundColor(Color.rgb(0, 157, 111));
                     break;
                 case R.id.second1D:
-                    db.deleteGraphTimeFrame(symbolName, "hour");
+                    MainActivity.db.deleteGraphTimeFrame(symbolName, "hour");
                     try {
-                        lineView2.jsonParse(24, "hour", 5, 6, parseList(listOfSelectedSymbol), symbolName);
+                        graphView2.readGraphPointsFromUrl(24, "hour", 5, 6, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), symbolName);
                         second3D.setBackgroundColor(Color.WHITE);
                         second1W.setBackgroundColor(Color.WHITE);
                         second1D.setBackgroundColor(Color.rgb(0, 157, 111));
@@ -341,9 +338,9 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
                         e.printStackTrace();
                     }
                 case R.id.second3D:
-                    db.deleteGraphTimeFrame(symbolName, "hour");
+                    MainActivity.db.deleteGraphTimeFrame(symbolName, "hour");
                     try {
-                        lineView2.jsonParse(72, "hour", 5, 6, parseList(listOfSelectedSymbol), symbolName);
+                        graphView2.readGraphPointsFromUrl(72, "hour", 5, 6, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), symbolName);
                         second1D.setBackgroundColor(Color.WHITE);
                         second1W.setBackgroundColor(Color.WHITE);
                         second3D.setBackgroundColor(Color.rgb(0, 157, 111));
@@ -352,9 +349,9 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
                         e.printStackTrace();
                     }
                 case R.id.second1W:
-                    db.deleteGraphTimeFrame(symbolName, "hour");
+                    MainActivity.db.deleteGraphTimeFrame(symbolName, "hour");
                     try {
-                        lineView2.jsonParse(168, "hour", 5, 6, parseList(listOfSelectedSymbol), symbolName);
+                        graphView2.readGraphPointsFromUrl(168, "hour", 5, 6, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), symbolName);
                         second1D.setBackgroundColor(Color.WHITE);
                         second3D.setBackgroundColor(Color.WHITE);
                         second1W.setBackgroundColor(Color.rgb(0, 157, 111));
@@ -363,9 +360,9 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
                         e.printStackTrace();
                     }
                 case R.id.third1h:
-                    db.deleteGraphTimeFrame(symbolName, "minute");
+                    MainActivity.db.deleteGraphTimeFrame(symbolName, "minute");
                     try {
-                        lineView3.jsonParse(60, "minute", 5, 6, parseList(listOfSelectedSymbol), symbolName);
+                        graphView3.readGraphPointsFromUrl(60, "minute", 5, 6, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), symbolName);
                         third1H.setBackgroundColor(Color.rgb(0, 157, 111));
                         third3H.setBackgroundColor(Color.WHITE);
                         third1D.setBackgroundColor(Color.WHITE);
@@ -374,9 +371,9 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
                         e.printStackTrace();
                     }
                 case R.id.third3h:
-                    db.deleteGraphTimeFrame(symbolName, "minute");
+                    MainActivity.db.deleteGraphTimeFrame(symbolName, "minute");
                     try {
-                        lineView3.jsonParse(180, "minute", 5, 6, parseList(listOfSelectedSymbol), symbolName);
+                        graphView3.readGraphPointsFromUrl(180, "minute", 5, 6, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), symbolName);
                         third1H.setBackgroundColor(Color.WHITE);
                         third3H.setBackgroundColor(Color.rgb(0, 157, 111));
                         third1D.setBackgroundColor(Color.WHITE);
@@ -385,9 +382,9 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
                         e.printStackTrace();
                     }
                 case R.id.third1D:
-                    db.deleteGraphTimeFrame(symbolName, "minute");
+                    MainActivity.db.deleteGraphTimeFrame(symbolName, "minute");
                     try {
-                        lineView3.jsonParse(1440, "minute", 5, 6, parseList(listOfSelectedSymbol), symbolName);
+                        graphView3.readGraphPointsFromUrl(1440, "minute", 5, 6, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), symbolName);
                         third1H.setBackgroundColor(Color.WHITE);
                         third3H.setBackgroundColor(Color.WHITE);
                         third1D.setBackgroundColor(Color.rgb(0, 157, 111));
@@ -408,15 +405,15 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
     /**
      * Read data from the database for given parameters.
      *
-     * @param lineView  - Line view in which the graph is drawn
+     * @param graphView  - Graph view in which the graph is drawn
      * @param timeFrame - Time frame, e.g. "day", "hour", "minute"
      * @param points    - List of points which would be displayed
      */
-    public void drawGraphsOffline(LineView lineView, String timeFrame, List<PointF> points) {
-        if(listOfSelectedSymbol.size() > 0)
-            listOfSelectedSymbol.clear();
-        listOfSelectedSymbol.add("Select");
-        Cursor res = db.readGraphLine(symbolName,  timeFrame);
+    public void drawGraphsOffline(GraphView graphView, String timeFrame, List<PointF> points) {
+        if(listOfAddedSymbolsOnGraph.size() > 0)
+            listOfAddedSymbolsOnGraph.clear();
+        listOfAddedSymbolsOnGraph.add("Select");
+        Cursor res = MainActivity.db.readGraphLineFromDB(symbolName,  timeFrame);
         timeAxis = new int[res.getCount()];
         int i = 0;
         int numColumns = 1;
@@ -428,20 +425,24 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
             numRows = res.getInt(6);
             numColumns = res.getInt(7);
             timeAxis[i] = res.getInt(4);
-            if(!listOfSelectedSymbol.contains(res.getString(1)))
-                listOfSelectedSymbol.add(res.getString(1));
+            if(!listOfAddedSymbolsOnGraph.contains(res.getString(1)))
+                listOfAddedSymbolsOnGraph.add(res.getString(1));
             i++;
         }
-        if(parseList(listOfSelectedSymbol).size() == 0)
+        if(deleteFirstElemOfList(listOfAddedSymbolsOnGraph).size() == 0)
             return;
-        int[] time = new int[points.size() / parseList(listOfSelectedSymbol).size()];
+        int[] time = new int[points.size() / deleteFirstElemOfList(listOfAddedSymbolsOnGraph).size()];
         for(int j = 0; j < time.length; j++) {
             time[j] = timeAxis[j];
         }
         if(points.size() > 0)
             // Call method for setting and drawing Graph.
-            lineView.setAllDrawingParameters(points, time, timeFrame, numRows, numColumns, parseList(listOfSelectedSymbol), symbolName);
+            graphView.setAllDrawingParameters(points, time, timeFrame, numRows, numColumns, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), symbolName);
+    }
 
+    private boolean isNetworkConnected() {
+        ConnectivityManager cm = (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        return cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isConnected();
     }
 
 }

@@ -16,7 +16,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".CoinDetailsTab"
+            android:name=".TabMenuForSelectedCoin"
             android:label="@string/title_activity_coin_details_tab"
             android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity android:name=".MainActivity">

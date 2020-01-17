@@ -1,11 +1,12 @@
 /**
- * Class Coin: consists of 3 parameters, name, symbol and image.
+ * Class Coin: 3 main parameters - name, symbol and image.
  */
 
 package com.example.cryptocurrency;
 
+
 public class Coin {
-    private static final String TAG = "Coin";
+    //private static final String TAG = "Coin";
 
     private String imageCoin;
     private String nameCoin;
@@ -27,6 +28,7 @@ public class Coin {
     public String getImageCoin() { return imageCoin; }
 
     public void setImageCoin(String imageCoin) { this.imageCoin = imageCoin;}
+
 
 }
 
