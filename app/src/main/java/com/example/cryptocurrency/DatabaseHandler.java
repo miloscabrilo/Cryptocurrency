@@ -1,6 +1,6 @@
 /**
  * Database class DatabaseHandler which is extended from SQLiteOpenHelper.
- * This class is used to create Database, and 3 Tables. Users can read and write from tables.
+ * This class is used to create Database, and 3 Tables. Users can read from tables and write into tables.
  */
 
 package com.example.cryptocurrency;
@@ -11,6 +11,9 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.graphics.PointF;
+
+import java.util.List;
 
 public class DatabaseHandler extends SQLiteOpenHelper {
 
@@ -62,7 +65,6 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    //////////////////////      WRITE METHODS        ///////////////////////
     /**
      * Insert single Coin into table Cryptocurrency_table. Result - boolean. For successful
      * database entry, the function returns true, in the opposite returns false.
@@ -106,47 +108,46 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     }
 
     /**
-     * Insert Graph line with dots into table Graph_line. Result - boolean. For successful
+     * Insert graph lines with dots into the table Graph_line. Result - boolean. For successful
      * database entry, the function returns true, in the opposite returns false.
      *
-     * @param symbolFrom    - Symbol of selected Cryptocurrency
-     * @param symbolTo      - Symbol used for comparison
-     * @param pointX        - X point
-     * @param pointY        - Y point
-     * @param time          - Time in seconds
-     * @param timeFrame     - Time frame, e.g. "day", "hour", "minute"
-     * @param numRows       - Number of rows for graph plotting
-     * @param numColumns    - Number of columns for graph plotting
-     * @return boolean      - True for successful database entry, in the opposite false
+     * @param symbolFrom        - Symbol of selected Cryptocurrency
+     * @param symbolsInString   - Symbols used for comparison
+     * @param dotsXstring       - List of x values for PointF objects
+     * @param dotsYstring       - List of y values for PointF objects
+     * @param timeAxisString    - String of Time - seconds
+     * @param timeFrame         - Time frame, e.g. "day", "hour", "minute"
+     * @param numRows           - Number of rows for graph plotting
+     * @param numColumns        - Number of columns for graph plotting
+     * @return boolean          - True for successful database entry, in the opposite false
      */
-    public boolean writeGraphLineIntoDB(String symbolFrom, String symbolTo, float pointX, float pointY, int time, String timeFrame, int numRows, int numColumns) {
+    public boolean writeAllGraphLinesIntoDB(String symbolFrom, String symbolsInString, String dotsXstring, String dotsYstring, String timeAxisString, String timeFrame, int numRows, int numColumns) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(SYM_FROM, symbolFrom);
-        contentValues.put(SYM_TO, symbolTo);
-        contentValues.put(POINT_X, pointX);
-        contentValues.put(POINT_Y, pointY);
-        contentValues.put(TIME, time);
+        contentValues.put(SYM_TO, symbolsInString );
+        contentValues.put(POINT_X, dotsXstring);
+        contentValues.put(POINT_Y, dotsYstring);
+        contentValues.put(TIME, timeAxisString);
         contentValues.put(TIME_FRAME, timeFrame);
         contentValues.put(NUM_ROWS, numRows);
         contentValues.put(NUM_COLUMNS, numColumns);
         long result = db.insert(TABLE_GRAPH_LINE, null, contentValues);
+
         if(result == -1)
             return false;
         else
             return true;
     }
 
-    //////////////////////      READ METHODS        ///////////////////////
-
-    // Getting all data from table Cryptocurrency_table.
+    // Getting all data from table Cryptocurrency_table - All Cryptocurrencies.
     public Cursor readCoinsFromDB(){
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor res = db.rawQuery("SELECT * FROM " + TABLE_COINS, null);
         return res;
     }
 
-    // Getting all data from table Selected_coin.
+    // Getting all data from the table Selected_coin.
     public Cursor readGeneralInfoFromDB(){
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor res = db.rawQuery("SELECT * FROM " + TABLE_SELECTED_COIN, null);
@@ -154,7 +155,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     }
 
     /**
-     * Read Graph line from table Graph_line. Result - Cursor.
+     * Read graph lines from the table for specified symbol and time frame.
      *
      * @param symbolFrom    - Symbol of selected Cryptocurrency
      * @param timeFrame     - Time frame, e.g. "day", "hour", "minute"
@@ -167,58 +168,14 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return res;
     }
 
-    public Cursor readSelectedCoinFromDatabase(String symbol){
-        SQLiteDatabase db = this.getWritableDatabase();
-        Cursor res = db.rawQuery("SELECT * FROM " + TABLE_SELECTED_COIN + " WHERE " + SYM_FROM + " = '" + symbol +
-                "'", null);
-        return res;
-    }
-
-    public Cursor readGraphLine(){
-        SQLiteDatabase db = this.getWritableDatabase();
-        Cursor res = db.rawQuery("SELECT * FROM " + TABLE_GRAPH_LINE, null);
-        return res;
-    }
-
-
-
     /**
-     * Delete Graph line from table Graph_line for the parameters used.
+     * Delete all graph lines from the table for specified symbol.
      *
      * @param symbolFrom    - Symbol of selected Cryptocurrency
-     * @param symbolTo      - Symbol used for comparison
      */
-    public void deleteGraphLine(String symbolFrom, String symbolTo) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        db.execSQL("DELETE FROM "+ TABLE_GRAPH_LINE + " WHERE " + SYM_FROM + " = '" + symbolFrom +
-                "' AND " + SYM_TO + " = '" + symbolTo + "'");
-        db.close();
-    }
-
     public void deleteGraphBySymbol(String symbolFrom) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DELETE FROM "+ TABLE_GRAPH_LINE + " WHERE " + SYM_FROM + " = '" + symbolFrom + "'");
-        db.close();
-    }
-
-
-    public void deleteSecetedCoin()
-    {
-        SQLiteDatabase db = this.getWritableDatabase();
-        db.execSQL("DELETE FROM "+ TABLE_SELECTED_COIN);
-        db.close();
-    }
-
-    public void deleteCoins() {
-        SQLiteDatabase db = this.getWritableDatabase();
-        db.execSQL("DELETE FROM "+ TABLE_COINS);
-        db.close();
-    }
-
-    // Delete table Graph_line.
-    public void deleteGraphs() {
-        SQLiteDatabase db = this.getWritableDatabase();
-        db.execSQL("DELETE FROM "+ TABLE_GRAPH_LINE);
         db.close();
     }
 

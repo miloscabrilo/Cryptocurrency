@@ -6,7 +6,6 @@ package com.example.cryptocurrency;
 
 
 public class Coin {
-    //private static final String TAG = "Coin";
 
     private String imageCoin;
     private String nameCoin;

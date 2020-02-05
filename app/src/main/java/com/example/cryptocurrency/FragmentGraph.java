@@ -25,8 +25,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.json.JSONException;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,8 +43,6 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
     private List<PointF> pointsList = new ArrayList<>();
     private List<PointF> pointsList2 = new ArrayList<>();
     private List<PointF> pointsList3 = new ArrayList<>();
-    private int[] timeAxis;
-
     public FragmentGraph() {
     }
 
@@ -130,6 +126,7 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
 
         }
 
+        // An initialization for adding and removing comparative graphs between symbols.
         final ArrayAdapter<String> adapterForAdd = new ArrayAdapter<String>(
                 getActivity(),
                 android.R.layout.simple_spinner_item,
@@ -153,7 +150,7 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
                         listOfAllAvailableSymbols.remove(position);
                         adapterForAdd.notifyDataSetChanged();
                         addSpinner.setSelection(0);
-                        MainActivity.db.deleteGraphs();
+                        MainActivity.db.deleteGraphBySymbol(symbolName);
                         initialSetButtonColor();
                         initialDrawing();
                     }
@@ -221,27 +218,35 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
         if(isNetworkConnected()) {
             // Initial graph plotting. By day compared - for one day.
             try {
-                graphView.draw(1, "day", 2, 1, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), symbolName);
-            } catch (JSONException e) {
+
+                ReceivePoints receivePoints = new ReceivePoints(1,"day", 2, 1,
+                        symbolName, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), graphView);
+                receivePoints.execute();
+            } catch (Exception e){
                 e.printStackTrace();
             }
 
             // Initial graph plotting. By hour compared - for one day.
             try {
-                graphView2.draw(24, "hour", 5, 6, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), symbolName);
-            } catch (JSONException e) {
+
+                ReceivePoints receivePoints = new ReceivePoints(24,"hour", 5, 6,
+                        symbolName, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), graphView2);
+                receivePoints.execute();
+            } catch (Exception e){
                 e.printStackTrace();
             }
 
             // Initial graph plotting. By minute compared - for one hour.
             try {
-                graphView3.draw(60, "minute", 5, 6, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), symbolName);
-            } catch (JSONException e) {
+
+                ReceivePoints receivePoints = new ReceivePoints(60,"minute", 5, 6,
+                        symbolName, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), graphView3);
+                receivePoints.execute();
+            } catch (Exception e){
                 e.printStackTrace();
             }
         }
         else {
-
             // Draw Graph lines in case users don't have an internet access.
             drawGraphsOffline(graphView, "day", pointsList);
             drawGraphsOffline(graphView2, "hour", pointsList2);
@@ -281,8 +286,10 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
                 case R.id.first1D:
                     MainActivity.db.deleteGraphTimeFrame(symbolName, "day");
                     try {
-                        graphView.readGraphPointsFromUrl(1, "day", 1, 1, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), symbolName);
-                    } catch (JSONException e) {
+                        ReceivePoints receivePoints = new ReceivePoints(1,"day", 2, 1,
+                                symbolName, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), graphView);
+                        receivePoints.execute();
+                    } catch (Exception e){
                         e.printStackTrace();
                     }
                     first1W.setBackgroundColor(Color.WHITE);
@@ -293,8 +300,10 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
                 case R.id.first1W:
                     MainActivity.db.deleteGraphTimeFrame(symbolName, "day");
                     try {
-                        graphView.readGraphPointsFromUrl(7, "day", 5, 7, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), symbolName);
-                    } catch (JSONException e) {
+                        ReceivePoints receivePoints = new ReceivePoints(7,"day", 5, 7,
+                            symbolName, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), graphView);
+                        receivePoints.execute();
+                    } catch (Exception e){
                         e.printStackTrace();
                     }
                     first1D.setBackgroundColor(Color.WHITE);
@@ -305,8 +314,10 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
                 case R.id.first2W:
                     MainActivity.db.deleteGraphTimeFrame(symbolName, "day");
                     try {
-                        graphView.readGraphPointsFromUrl(14, "day", 5, 7, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), symbolName);
-                    } catch (JSONException e) {
+                        ReceivePoints receivePoints = new ReceivePoints(14,"day", 5, 7,
+                                symbolName, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), graphView);
+                        receivePoints.execute();
+                    } catch (Exception e){
                         e.printStackTrace();
                     }
                     first1D.setBackgroundColor(Color.WHITE);
@@ -317,8 +328,10 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
                 case R.id.first1M:
                     MainActivity.db.deleteGraphTimeFrame(symbolName, "day");
                     try {
-                        graphView.readGraphPointsFromUrl(30, "day", 5, 6, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), symbolName);
-                    } catch (JSONException e) {
+                        ReceivePoints receivePoints = new ReceivePoints(30,"day", 5, 6,
+                                symbolName, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), graphView);
+                        receivePoints.execute();
+                    } catch (Exception e){
                         e.printStackTrace();
                     }
                     first1D.setBackgroundColor(Color.WHITE);
@@ -329,69 +342,81 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
                 case R.id.second1D:
                     MainActivity.db.deleteGraphTimeFrame(symbolName, "hour");
                     try {
-                        graphView2.readGraphPointsFromUrl(24, "hour", 5, 6, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), symbolName);
-                        second3D.setBackgroundColor(Color.WHITE);
-                        second1W.setBackgroundColor(Color.WHITE);
-                        second1D.setBackgroundColor(Color.rgb(0, 157, 111));
-                        break;
-                    } catch (JSONException e) {
+                        ReceivePoints receivePoints = new ReceivePoints(24,"hour", 5, 6,
+                                symbolName, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), graphView2);
+                        receivePoints.execute();
+                    } catch (Exception e){
                         e.printStackTrace();
                     }
+                    second3D.setBackgroundColor(Color.WHITE);
+                    second1W.setBackgroundColor(Color.WHITE);
+                    second1D.setBackgroundColor(Color.rgb(0, 157, 111));
+                    break;
                 case R.id.second3D:
                     MainActivity.db.deleteGraphTimeFrame(symbolName, "hour");
                     try {
-                        graphView2.readGraphPointsFromUrl(72, "hour", 5, 6, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), symbolName);
-                        second1D.setBackgroundColor(Color.WHITE);
-                        second1W.setBackgroundColor(Color.WHITE);
-                        second3D.setBackgroundColor(Color.rgb(0, 157, 111));
-                        break;
-                    } catch (JSONException e) {
+                        ReceivePoints receivePoints = new ReceivePoints(72,"hour", 5, 6,
+                                symbolName, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), graphView2);
+                        receivePoints.execute();
+                    } catch (Exception e){
                         e.printStackTrace();
                     }
+                    second1D.setBackgroundColor(Color.WHITE);
+                    second1W.setBackgroundColor(Color.WHITE);
+                    second3D.setBackgroundColor(Color.rgb(0, 157, 111));
+                    break;
                 case R.id.second1W:
                     MainActivity.db.deleteGraphTimeFrame(symbolName, "hour");
                     try {
-                        graphView2.readGraphPointsFromUrl(168, "hour", 5, 6, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), symbolName);
-                        second1D.setBackgroundColor(Color.WHITE);
-                        second3D.setBackgroundColor(Color.WHITE);
-                        second1W.setBackgroundColor(Color.rgb(0, 157, 111));
-                        break;
-                    } catch (JSONException e) {
+                        ReceivePoints receivePoints = new ReceivePoints(168,"hour", 5, 6,
+                                symbolName, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), graphView2);
+                        receivePoints.execute();
+                    } catch (Exception e){
                         e.printStackTrace();
                     }
+                    second1D.setBackgroundColor(Color.WHITE);
+                    second3D.setBackgroundColor(Color.WHITE);
+                    second1W.setBackgroundColor(Color.rgb(0, 157, 111));
+                    break;
                 case R.id.third1h:
                     MainActivity.db.deleteGraphTimeFrame(symbolName, "minute");
                     try {
-                        graphView3.readGraphPointsFromUrl(60, "minute", 5, 6, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), symbolName);
-                        third1H.setBackgroundColor(Color.rgb(0, 157, 111));
-                        third3H.setBackgroundColor(Color.WHITE);
-                        third1D.setBackgroundColor(Color.WHITE);
-                        break;
-                    } catch (JSONException e) {
+                        ReceivePoints receivePoints = new ReceivePoints(60,"minute", 5, 6,
+                                symbolName, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), graphView3);
+                        receivePoints.execute();
+                    } catch (Exception e){
                         e.printStackTrace();
                     }
+                    third1H.setBackgroundColor(Color.rgb(0, 157, 111));
+                    third3H.setBackgroundColor(Color.WHITE);
+                    third1D.setBackgroundColor(Color.WHITE);
+                    break;
                 case R.id.third3h:
                     MainActivity.db.deleteGraphTimeFrame(symbolName, "minute");
                     try {
-                        graphView3.readGraphPointsFromUrl(180, "minute", 5, 6, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), symbolName);
-                        third1H.setBackgroundColor(Color.WHITE);
-                        third3H.setBackgroundColor(Color.rgb(0, 157, 111));
-                        third1D.setBackgroundColor(Color.WHITE);
-                        break;
-                    } catch (JSONException e) {
+                        ReceivePoints receivePoints = new ReceivePoints(180,"minute", 5, 6,
+                                symbolName, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), graphView3);
+                        receivePoints.execute();
+                    } catch (Exception e){
                         e.printStackTrace();
                     }
+                    third1H.setBackgroundColor(Color.WHITE);
+                    third3H.setBackgroundColor(Color.rgb(0, 157, 111));
+                    third1D.setBackgroundColor(Color.WHITE);
+                    break;
                 case R.id.third1D:
                     MainActivity.db.deleteGraphTimeFrame(symbolName, "minute");
                     try {
-                        graphView3.readGraphPointsFromUrl(1440, "minute", 5, 6, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), symbolName);
-                        third1H.setBackgroundColor(Color.WHITE);
-                        third3H.setBackgroundColor(Color.WHITE);
-                        third1D.setBackgroundColor(Color.rgb(0, 157, 111));
-                        break;
-                    } catch (JSONException e) {
+                        ReceivePoints receivePoints = new ReceivePoints(1440,"minute", 5, 6,
+                                symbolName, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), graphView3);
+                        receivePoints.execute();
+                    } catch (Exception e){
                         e.printStackTrace();
                     }
+                    third1H.setBackgroundColor(Color.WHITE);
+                    third3H.setBackgroundColor(Color.WHITE);
+                    third1D.setBackgroundColor(Color.rgb(0, 157, 111));
+                    break;
             }
         }
         else {
@@ -403,43 +428,74 @@ public class FragmentGraph extends Fragment implements View.OnClickListener {
     }
 
     /**
-     * Read data from the database for given parameters.
+     * Reading data from the database for specific parameters.
      *
-     * @param graphView  - Graph view in which the graph is drawn
+     * @param graphView - Graph view - in which the graph lines are drawn
      * @param timeFrame - Time frame, e.g. "day", "hour", "minute"
      * @param points    - List of points which would be displayed
      */
     public void drawGraphsOffline(GraphView graphView, String timeFrame, List<PointF> points) {
+        // Adding string "Select" for spinner.
         if(listOfAddedSymbolsOnGraph.size() > 0)
             listOfAddedSymbolsOnGraph.clear();
         listOfAddedSymbolsOnGraph.add("Select");
-        Cursor res = MainActivity.db.readGraphLineFromDB(symbolName,  timeFrame);
-        timeAxis = new int[res.getCount()];
-        int i = 0;
-        int numColumns = 1;
-        int numRows = 1;
-        // Reading point by point from database.
-        while(res.moveToNext()){
-            PointF dot = new PointF(res.getFloat(2), res.getFloat(3));
+
+        // Reading from Database.
+        Cursor res = MainActivity.db.readGraphLineFromDB(symbolName, timeFrame);
+        if(!res.moveToNext())
+            return;
+
+        // Deserialization ADDED symbols. (in database all symbols are stored as one string)
+        String listOfSymbols = res.getString(1);
+        String singleSymbol = "";
+        while (!singleSymbol.equals(listOfSymbols)) {
+            singleSymbol = listOfSymbols.substring(0, listOfSymbols.indexOf("\n") + 1);
+            listOfAddedSymbolsOnGraph.add(singleSymbol.substring(0, singleSymbol.indexOf("\n")));
+            listOfSymbols = listOfSymbols.substring(listOfSymbols.indexOf("\n") + 1);
+            singleSymbol = "";
+        }
+
+        // Deserialization for points. (in database all x values are stored as one string, same with y values)
+        String dotsX = res.getString(2);
+        String dotsY = res.getString(3);
+        String singleDotX = "";
+        String singleDotY = "";
+        while (!singleDotX.equals(dotsX)) {
+            singleDotX = dotsX.substring(0, dotsX.indexOf("\n") + 1);
+            singleDotY = dotsY.substring(0, dotsY.indexOf("\n") + 1);
+            PointF dot = new PointF(Float.valueOf(singleDotX.substring(0, singleDotX.indexOf("\n"))), Float.valueOf(singleDotY.substring(0, singleDotY.indexOf("\n"))));
             points.add(dot);
-            numRows = res.getInt(6);
-            numColumns = res.getInt(7);
-            timeAxis[i] = res.getInt(4);
-            if(!listOfAddedSymbolsOnGraph.contains(res.getString(1)))
-                listOfAddedSymbolsOnGraph.add(res.getString(1));
+            dotsX = dotsX.substring(dotsX.indexOf("\n") + 1);
+            dotsY = dotsY.substring(dotsY.indexOf("\n") + 1);
+            singleDotY = "";
+            singleDotX = "";
+        }
+
+        // Deserialization for timeAxis. (x axis values)
+        int timeAxis[];
+        timeAxis = new int[points.size() / deleteFirstElemOfList(listOfAddedSymbolsOnGraph).size()];
+        String time = res.getString(4);
+        String singleTime = "";
+        int i = 0;
+        while (!singleTime.equals(time)) {
+            singleTime = time.substring(0, time.indexOf("\n") + 1);
+            timeAxis[i] = Integer.valueOf(singleTime.substring(0, singleTime.indexOf("\n")));
+            time = time.substring(time.indexOf("\n") + 1);
+            singleTime = "";
             i++;
         }
-        if(deleteFirstElemOfList(listOfAddedSymbolsOnGraph).size() == 0)
-            return;
-        int[] time = new int[points.size() / deleteFirstElemOfList(listOfAddedSymbolsOnGraph).size()];
-        for(int j = 0; j < time.length; j++) {
-            time[j] = timeAxis[j];
-        }
+
+        // Deserialization for rows and columns.
+        int numRows = res.getInt(6);
+        int numColumns = res.getInt(7);
+
         if(points.size() > 0)
             // Call method for setting and drawing Graph.
-            graphView.setAllDrawingParameters(points, time, timeFrame, numRows, numColumns, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), symbolName);
+            graphView.setAllDrawingParameters(points, timeAxis, timeFrame, numRows, numColumns, deleteFirstElemOfList(listOfAddedSymbolsOnGraph), symbolName);
+
     }
 
+    // Checking internet connection.
     private boolean isNetworkConnected() {
         ConnectivityManager cm = (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
         return cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isConnected();

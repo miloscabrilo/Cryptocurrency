@@ -37,22 +37,15 @@ public class FragmentGeneralInfo extends Fragment {
     private TextView captionGeneralInfo, captionComparedValue;
     private TextView textGenInfo, textCompValue;
     private String[] listOfRequestedComparisons;    // list of the symbols for requested comparisons
-    //private RequestQueue mQueue;
     private String symbolName;
     private String URL_GENERAL_INFO;
     private String URL_COMPARED_VALUE;
-    //private boolean internetAccess;
-    //private DatabaseHandler db;
 
     public FragmentGeneralInfo() {
     }
-    /*public FragmentGeneralInfo(String symbol, boolean internetAccess) {
-        symbolName = symbol;
-        this.internetAccess = internetAccess;
-    }*/
+
     public FragmentGeneralInfo(String symbol) {
         symbolName = symbol;
-        //this.internetAccess = internetAccess;
     }
 
     @Override
@@ -72,7 +65,6 @@ public class FragmentGeneralInfo extends Fragment {
         captionComparedValue.setTypeface(null, Typeface.BOLD);
         textGenInfo = (TextView) view.findViewById(R.id.textGenInfo);
         textCompValue = (TextView) view.findViewById(R.id.textCompValue);
-        //mQueue = Volley.newRequestQueue(getContext());
 
         // Requested comparisons.
         listOfRequestedComparisons = new String[] {
@@ -81,12 +73,11 @@ public class FragmentGeneralInfo extends Fragment {
         listGenInfo = new ArrayList<>();
         listCompareValue = new ArrayList<>();
 
+        // Necessary url strings.
         URL_GENERAL_INFO = "https://min-api.cryptocompare.com/data/pricemultifull?fsyms=" + symbolName + "&tsyms=USD";
         URL_COMPARED_VALUE = "https://min-api.cryptocompare.com/data/price?fsym=" + symbolName + "&tsyms=" + listOfRequestedComparisons[0];
         for(int i = 1; i < listOfRequestedComparisons.length; i++)
             URL_COMPARED_VALUE = URL_COMPARED_VALUE + "," + listOfRequestedComparisons[i];
-
-        //db = new DatabaseHandler(getContext());
 
         // Checking internet Access. If Internet is available, use data from URL, otherwise use data from DB if exist.
         if(isNetworkConnected()) {
@@ -115,10 +106,6 @@ public class FragmentGeneralInfo extends Fragment {
 
     // JSON deserialize method for compare selected Cryptocurrency with string array Cryptocurrencies.
     public void readComparedValuesForSelectedCoin() throws JSONException {
-        //https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETC&tsyms=USD,ETH,EVN,DOGE,ZEC,USD,EUR
-        /*String url = "https://min-api.cryptocompare.com/data/price?fsym=" + symbolName + "&tsyms=" + listOfRequestedComparisons[0];
-        for(int i = 1; i < listOfRequestedComparisons.length; i++)
-            url = url + "," + listOfRequestedComparisons[i];*/
 
         // Json request for obtain compared values.
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, URL_COMPARED_VALUE, null,
@@ -156,9 +143,6 @@ public class FragmentGeneralInfo extends Fragment {
     // JSON deserialize method for showing full information of selected Cryptocurrency.
     public void readGeneralInfoForSelectedCoin() throws JSONException {
 
-        //https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETC&tsyms=USD
-        //String url = "https://min-api.cryptocompare.com/data/pricemultifull?fsyms=" + symbolName + "&tsyms=USD";
-
         // Json request for obtain parameters for selected Cryptocurrency.
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, URL_GENERAL_INFO, null,
                 new Response.Listener<JSONObject>() {
@@ -195,6 +179,7 @@ public class FragmentGeneralInfo extends Fragment {
         MainActivity.mQueue.add(request);
     }
 
+    // Checking internet connection.
     private boolean isNetworkConnected() {
         ConnectivityManager cm = (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
         return cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isConnected();

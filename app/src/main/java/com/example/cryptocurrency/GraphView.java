@@ -14,15 +14,7 @@ import android.util.AttributeSet;
 import android.view.View;
 
 import androidx.annotation.Nullable;
-
-import com.android.volley.Request;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -36,7 +28,6 @@ public class GraphView extends View {
     private float yMin, yMax;
     private List<PointF> points = new ArrayList<>();
     private List<String> selectedSymbols;
-    private List<String> tempSelectedSymbols = new ArrayList<>();
     private String symbolName;
     private String[] yAxisValue;
     private String[] xAxisValue;
@@ -67,37 +58,6 @@ public class GraphView extends View {
 
     public GraphView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-    }
-
-    /**
-     * Draw method.
-     *
-     * @param numberOfData  - List of points which would be displayed
-     * @param timeFrame     - Time frame, e.g. "day", "hour", "minute"
-     * @param numberRows    - Number of rows for graph plotting
-     * @param numberColumns - Number of columns for graph plotting
-     * @param selSymbol     - List of loaded symbols
-     * @param forSymbolName - Selected symbol
-     */
-    public void draw(int numberOfData, String timeFrame, int numberRows, int numberColumns,
-                     List<String> selSymbol, String forSymbolName ) throws JSONException {
-
-        blackPaint = new Paint();
-        textTitlePaint = new Paint();
-        textAxisPaint = new Paint();
-        textTitlePaint.setTextSize(30);
-        textTitlePaint.setFakeBoldText(true);
-        textTitlePaint.setTextAlign(Paint.Align.CENTER);
-        textAxisPaint.setTextSize(textAxisSize);
-        // Calling readGraphPointsFromUrl method to plotting initial graphs.
-        try {
-            readGraphPointsFromUrl(numberOfData, timeFrame, numberRows, numberColumns, selSymbol, forSymbolName);
-        }
-        catch (JSONException e){
-            e.printStackTrace();
-        }
-
-        requestLayout();
     }
 
     /**
@@ -215,6 +175,7 @@ public class GraphView extends View {
         }
     }
 
+    // Method for drawing graphic lines on canvas.
     @Override
     protected void onDraw(Canvas canvas) {
 
@@ -236,6 +197,7 @@ public class GraphView extends View {
         // Initializing all chart adjustment functions.
         if(points.size() != 0){
 
+            calculateDimensions();
             findMaxMin();
             scalePointY();
             findGridForYAxis();
@@ -287,16 +249,6 @@ public class GraphView extends View {
         super.onDraw(canvas);
     }
 
-    public void setNumColumns(int numColumns) {
-        this.numColumns = numColumns;
-        calculateDimensions();
-    }
-
-    public void setNumRows(int numRows) {
-        this.numRows = numRows;
-        calculateDimensions();
-    }
-
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
@@ -312,69 +264,6 @@ public class GraphView extends View {
         cellWidth =  ((super.getWidth() - paddingOffset * 2) / numColumns);
         cellHeight = ((super.getHeight() - paddingOffset * 2) / numRows);
     }
-
-
-    /**
-     * JSON deserialize method for given parameters. Read data from URL.
-     *
-     * @param numberOfData  - List of points which would be displayed
-     * @param timeFrame     - Time frame, e.g. "day", "hour", "minute"
-     * @param numberRows    - Number of rows for graph plotting
-     * @param numberColumns - Number of columns for graph plotting
-     * @param selSymbol     - List of loaded symbols
-     * @param forSymbolName - Selected symbol
-     */
-    public void readGraphPointsFromUrl(final int numberOfData, String timeFrame, int numberRows, int numberColumns, List<String> selSymbol, String forSymbolName) throws JSONException {
-
-        sharedTimeFrame = timeFrame;
-        timeAxis = new int[numberOfData + 1];
-        symbolName = forSymbolName;
-        selectedSymbols = selSymbol;
-        numRows = numberRows;
-        numColumns = numberColumns;
-        calculateDimensions();
-        setTempSelectedSymbols(selectedSymbols);
-        points.clear();
-        for ( int i = 0; i < selectedSymbols.size(); i++) {
-            // Preparing URL address.
-            String url = "https://min-api.cryptocompare.com/data/v2/histo" + sharedTimeFrame +
-                    "?fsym=" + symbolName  + "&tsym=" + selectedSymbols.get(i) + "&limit=" + numberOfData;
-
-            // Json request for obtain parameters for graph view.
-            JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
-                    new Response.Listener<JSONObject>() {
-                        @Override
-                        public void onResponse(JSONObject response) {
-                            try {
-                                JSONObject dataObject = response.getJSONObject("Data");
-                                JSONArray data = dataObject.getJSONArray("Data");
-                                for(int j = 0; j< data.length(); j++) {
-                                    JSONObject objectData = data.getJSONObject(j);
-                                    PointF dot = new PointF(j, Float.valueOf(objectData.getString("close")));
-                                    points.add(dot);
-                                    if(points.size() <= numberOfData + 1)      // Only once reading.
-                                        timeAxis[j] = Integer.valueOf(objectData.getString("time"));
-                                    MainActivity.db.writeGraphLineIntoDB(symbolName, tempSelectedSymbols.get(0), dot.x, dot.y, timeAxis[j], sharedTimeFrame, numRows, numColumns);
-                                }
-                                // If all data is loaded.
-                                if( points.size() == selectedSymbols.size() * (numberOfData + 1))
-                                    invalidate();
-                                tempSelectedSymbols.remove(0);
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    },
-                    new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            error.printStackTrace();
-                        }
-                    });
-            MainActivity.mQueue.add(request);
-        }
-    }
-
 
     /**
      * Transforming the Month string from "MM" (where M is number) to short text strings.
@@ -431,6 +320,7 @@ public class GraphView extends View {
      * @param time - Time in seconds
      * @return     - String, return Day as two digits
      */
+    @NotNull
     private String getDay(long time) {
         Calendar cal = Calendar.getInstance(Locale.FRANCE);
         cal.setTimeInMillis(time * 1000);
@@ -444,6 +334,7 @@ public class GraphView extends View {
      * @return     - String, return am/pm
      */
     // Timestamp convert function for am/pm.
+    @NotNull
     private String getAmPm(long time) {
         Calendar cal = Calendar.getInstance(Locale.FRANCE);
         cal.setTimeInMillis(time * 1000);
@@ -456,6 +347,7 @@ public class GraphView extends View {
      * @param time - Time in seconds
      * @return     - String, return hour as two digits
      */
+    @NotNull
     private String getHour(long time) {
         Calendar cal = Calendar.getInstance(Locale.FRANCE);
         cal.setTimeInMillis(time * 1000);
@@ -468,20 +360,11 @@ public class GraphView extends View {
      * @param time - Time in seconds
      * @return     - String, return minute as two digits
      */
+    @NotNull
     private String getMinute(long time) {
         Calendar cal = Calendar.getInstance(Locale.FRANCE);
         cal.setTimeInMillis(time * 1000);
         return DateFormat.format("mm", cal).toString();
-    }
-
-    /**
-     * Generate a list of loaded Cryptocurrencies.
-     *
-     * @param symbols - Symbol list of loaded Cryptocurrencies
-     */
-    private void setTempSelectedSymbols (List<String> symbols) {
-        for(int i = 0; i < symbols.size(); i++)
-            tempSelectedSymbols.add(symbols.get(i));
     }
 
 }
