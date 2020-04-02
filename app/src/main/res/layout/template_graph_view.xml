@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:id="@+id/list_item1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/first1D"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:focusable="true"
+                android:layout_weight="1"
+                android:text="1D" />
+
+            <Button
+                android:id="@+id/first1W"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:focusable="true"
+                android:layout_weight="1"
+                android:text="1W" />
+
+            <Button
+                android:id="@+id/first2W"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="2W" />
+
+            <Button
+                android:id="@+id/first1M"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="1M" />
+        </LinearLayout>
+
+        <com.example.cryptocurrency.GraphView
+            android:id="@+id/graphView"
+            android:layout_width="match_parent"
+            android:layout_centerInParent="true"
+            android:layout_height="400dp"
+            android:layout_below="@+id/list_item1"/>
+
+        <View
+            android:id="@+id/line1"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:layout_below="@+id/graphView"
+            android:background="#c0c0c0"/>
+
+
+    </RelativeLayout>
+</LinearLayout>

@@ -1716,6 +1716,10 @@
         "source": "C:\\Users\\MilosCabrilo\\.gradle\\caches\\transforms-2\\files-2.1\\2946ca0ea6c89dab7d7d9fbc18e54292\\material-1.0.0\\res\\drawable\\ic_mtrl_chip_close_circle.xml"
     },
     {
+        "merged": "C:\\Users\\MilosCabrilo\\AndroidStudioProjects\\Cryptocurrency\\app\\build\\intermediates\\res\\merged\\debug\\layout_template_graph_view.xml.flat",
+        "source": "C:\\Users\\MilosCabrilo\\AndroidStudioProjects\\Cryptocurrency\\app\\src\\main\\res\\layout\\template_graph_view.xml"
+    },
+    {
         "merged": "C:\\Users\\MilosCabrilo\\AndroidStudioProjects\\Cryptocurrency\\app\\build\\intermediates\\res\\merged\\debug\\drawable_notification_bg.xml.flat",
         "source": "C:\\Users\\MilosCabrilo\\.gradle\\caches\\transforms-2\\files-2.1\\c0a39027978b83a483a047f5c31d0c4e\\core-1.0.1\\res\\drawable\\notification_bg.xml"
     },
