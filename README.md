@@ -10,7 +10,7 @@ Each crypto value info in the list contain:
 * name
 * symbol
 * image
-![alt text](https://github.com/miloscabrilo/Cryptocurrency/blob/master/first_screen.jpg){:height="50%" width="50%"}
+![alt text](https://github.com/miloscabrilo/Cryptocurrency/blob/master/first_screen.jpg =100x20)
 
 When cryptocurrency is selected from the list, details for the selected currency are shown.
 
