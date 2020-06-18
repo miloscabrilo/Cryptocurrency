@@ -10,10 +10,11 @@ Each crypto value info in the list contain:
 * name
 * symbol
 * image
-![alt text](https://github.com/miloscabrilo/Cryptocurrency/blob/master/first_screen.jpg =100x20)
-
 <img src="https://github.com/miloscabrilo/Cryptocurrency/blob/master/first_screen.jpg" width="200">
 
-When cryptocurrency is selected from the list, details for the selected currency are shown.
+When cryptocurrency is selected from the list, details for the selected currency are shown in two tabs.
+* first tab - General info
+* second tab - Graph view
+** shown historical cryptocurency value by day in the last X days
 
 
