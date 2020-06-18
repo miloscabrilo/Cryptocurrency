@@ -1,7 +1,7 @@
 # Cryptocurrency
 
 Cryptocurrency
-App for a comparative view of cryptocurrency values using [Cryptocompare API](https://github.com/user/repo/blob/branch/other_file.md) https://min-api.cryptocompare.com/ (Cryptocompare API)
+App for a comparative view of cryptocurrency values using [Cryptocompare API](https://min-api.cryptocompare.com/)
 
 The first screen contain the list of all cryptocurrencies supported by the API
 
