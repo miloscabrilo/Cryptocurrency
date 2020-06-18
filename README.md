@@ -12,6 +12,8 @@ Each crypto value info in the list contain:
 * image
 ![alt text](https://github.com/miloscabrilo/Cryptocurrency/blob/master/first_screen.jpg =100x20)
 
+<img src="https://github.com/miloscabrilo/Cryptocurrency/blob/master/first_screen.jpg" width="200">
+
 When cryptocurrency is selected from the list, details for the selected currency are shown.
 
 
