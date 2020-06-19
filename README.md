@@ -28,5 +28,7 @@ Implemented time frames: one hour, three hours, one day.
 
 Graph view is created without using third-party libraries.
 
-Also, the App provides the ability to compare multiple cryptocurrencies on the same graph.
+Also, the application provides the ability to compare multiple cryptocurrencies on the same graph.
 
+The data is stored in the local SQLite database each time the application is launch again.
+In case when users don't have an internet access, tha data is read from the database.
