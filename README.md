@@ -21,15 +21,15 @@ When cryptocurrency is selected from the list, details for the selected currency
 Graph view tab consists of three graphs. 
 * First graph shows historical cryptocurency value by day in the last X days, where X can be choosen by user.
 Implemented time frames: one day, one week, two weeks, one month. 
-<img src="https://github.com/miloscabrilo/Cryptocurrency/blob/master/graph1.jpg" width="200">
+<img src="https://github.com/miloscabrilo/Cryptocurrency/blob/master/graph_view1.jpg" width="200">
 
 * Second graph shows historical cryptocurency value by hour in the last X days, where X can be choosen by user.
 Implemented time frames: one day, three days, one week. 
-<img src="https://github.com/miloscabrilo/Cryptocurrency/blob/master/graph2.jpg" width="200">
+<img src="https://github.com/miloscabrilo/Cryptocurrency/blob/master/graph_view2.jpg" width="200">
 
 * Third graph shows historical cryptocurency value by minute in the last X days, where X can be choosen by user.
 Implemented time frames: one hour, three hours, one day. 
-<img src="https://github.com/miloscabrilo/Cryptocurrency/blob/master/graph3.jpg" width="200">
+<img src="https://github.com/miloscabrilo/Cryptocurrency/blob/master/graph_view3.jpg" width="200">
 
 
 Graph view is created without using third-party libraries.
