@@ -13,6 +13,7 @@ Each crypto value info in the list contain:
 <img src="https://github.com/miloscabrilo/Cryptocurrency/blob/master/first_screen.jpg" width="200">
 
 When cryptocurrency is selected from the list, details for the selected currency are shown in two tabs.
+
 *General info*
 <img src="https://github.com/miloscabrilo/Cryptocurrency/blob/master/general_info.jpg" width="200">
 
